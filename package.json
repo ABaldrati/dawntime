@@ -10,7 +10,7 @@
     "clean": "rm dist/bundle.js",
     "build-dev": "webpack -d --mode development",
     "build-prod": "webpack -p --mode production",
-	"start": "webpack-dev-server"
+    "start": "webpack-dev-server"
   },
   "dependencies": {
     "bootstrap": "latest",
@@ -23,6 +23,8 @@
     "node-sass": "latest",
     "sass-loader": "latest",
     "style-loader": "latest",
+    "typescript": "latest",
+    "ts-loader": "latest",
     "webpack": "latest",
     "webpack-bundle-analyzer": "latest",
     "webpack-cli": "latest",
