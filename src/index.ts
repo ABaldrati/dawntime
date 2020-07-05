@@ -5,7 +5,7 @@ import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {
     AmbientLight,
     AxesHelper,
-    LinearFilter, Material,
+    LinearFilter,
     Mesh,
     MeshBasicMaterial,
     PerspectiveCamera,
