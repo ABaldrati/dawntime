@@ -9,8 +9,9 @@
         "moduleResolution": "node",
         "target": "es6",
         "allowJs": true,
+        "allowSyntheticDefaultImports": true
     },
     "include": [
-        "./src/**/*"
+        "./src/**/*.ts"
     ]
 }

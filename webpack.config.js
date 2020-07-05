@@ -35,6 +35,10 @@ const config = {
             loader: 'sass-loader'
           }
         ]
+      },
+      {
+        test: /\.glsl$/,
+        use: 'raw-loader'
       }
     ]
   },
