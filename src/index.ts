@@ -4,7 +4,7 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {
     AmbientLight,
-    AxesHelper,
+    AxesHelper, Camera,
     LinearFilter,
     Mesh,
     MeshBasicMaterial,
@@ -26,6 +26,11 @@ import blendingFragmentShader from "./BlendingFragmentShader.glsl"
 import passThroughFragmentShader from "./PassThroughFragmentShader.glsl"
 
 import skullFile from "../models/skull/scene.gltf";
+
+interface SceneComposers {
+    occlusionComposer: EffectComposer,
+    sceneComposer: EffectComposer
+}
 
 const occlusionShader = {
     uniforms: {
@@ -68,10 +73,10 @@ const OCCLUSION_LAYER = 1;
 const axesHelper = new AxesHelper(10);
 const loader = new GLTFLoader();
 const scene = new Scene();
-let camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 const renderer = new WebGLRenderer();
-let controls = new OrbitControls(camera, renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
 
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -80,42 +85,46 @@ renderer.domElement.style.top = "0";
 renderer.domElement.style.left = "0";
 document.body.appendChild(renderer.domElement);
 
-loader.load(skullFile, skull => {
-    skull.scene.traverse(o => {
-        if (o instanceof Mesh) {
-            let material = new MeshBasicMaterial({color: "#000000"});
-            let occlusionObject = new Mesh(o.geometry, material)
+const effectComposers = composeEffects(renderer, scene, camera);
 
-            o.add(axesHelper);
+function buildScene() {
+    loader.load(skullFile, skull => {
+        skull.scene.traverse(o => {
+            if (o instanceof Mesh) {
+                let material = new MeshBasicMaterial({color: "#000000"});
+                let occlusionObject = new Mesh(o.geometry, material)
 
-            occlusionObject.add(new AxesHelper(10));
-            occlusionObject.layers.set(OCCLUSION_LAYER)
-            o.parent?.add(occlusionObject)
-        }
-    })
+                o.add(axesHelper);
 
-    scene.add(skull.scene);
-    skull.scene.position.z = 2;
-}, undefined, error => {
-    console.error(error);
-});
+                occlusionObject.add(new AxesHelper(10));
+                occlusionObject.layers.set(OCCLUSION_LAYER)
+                o.parent?.add(occlusionObject)
+            }
+        })
 
-let ambientLight = new AmbientLight("#2c3e50");
-scene.add(ambientLight);
+        scene.add(skull.scene);
+        skull.scene.position.z = 2;
+    }, undefined, error => {
+        console.error(error);
+    });
 
-let pointLight = new PointLight("#ffffff");
-scene.add(pointLight);
+    let ambientLight = new AmbientLight("#2c3e50");
+    scene.add(ambientLight);
 
-let geometry = new SphereBufferGeometry(0.5, 32, 32);
-let material = new MeshBasicMaterial({color: 0xffffff});
-let lightSphere = new Mesh(geometry, material);
-lightSphere.layers.set(OCCLUSION_LAYER)
-scene.add(lightSphere);
+    let pointLight = new PointLight("#ffffff");
+    scene.add(pointLight);
 
-camera.position.z = 6;
-controls.update();
+    let geometry = new SphereBufferGeometry(0.5, 32, 32);
+    let material = new MeshBasicMaterial({color: 0xffffff});
+    let lightSphere = new Mesh(geometry, material);
+    lightSphere.layers.set(OCCLUSION_LAYER)
+    scene.add(lightSphere);
 
-function composeEffects(): [EffectComposer, EffectComposer] {
+    camera.position.z = 6;
+    controls.update();
+}
+
+function composeEffects(renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera): SceneComposers {
     const renderTargetParameters = {
         minFilter: LinearFilter,
         magFilter: LinearFilter,
@@ -141,14 +150,12 @@ function composeEffects(): [EffectComposer, EffectComposer] {
     blendingPass.renderToScreen = true;
     sceneComposer.addPass(blendingPass);
 
-    return [occlusionComposer, sceneComposer]
+    return {occlusionComposer, sceneComposer}
 }
 
 function update() {}
 
-let [occlusionComposer, sceneComposer] = composeEffects();
-
-function render() {
+function render(camera: Camera, {occlusionComposer, sceneComposer}: SceneComposers) {
     camera.layers.set(OCCLUSION_LAYER);
     occlusionComposer.render();
 
@@ -157,11 +164,12 @@ function render() {
     sceneComposer.render();
 }
 
-function onFrame() {
-    requestAnimationFrame(onFrame);
+function onFrame(camera: Camera) {
+    requestAnimationFrame(() => onFrame(camera));
     controls.update();
     update();
-    render();
+    render(camera, effectComposers);
 }
 
-onFrame();
+buildScene();
+onFrame(camera);
