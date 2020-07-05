@@ -75,6 +75,9 @@ let controls = new OrbitControls(camera, renderer.domElement);
 
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.domElement.style.position = "absolute";
+renderer.domElement.style.top = "0";
+renderer.domElement.style.left = "0";
 document.body.appendChild(renderer.domElement);
 
 loader.load(skullFile, skull => {
