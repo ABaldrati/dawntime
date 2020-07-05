@@ -25,6 +25,8 @@ import passThroughVertexShader from "./PassThroughVertexShader.glsl"
 import blendingFragmentShader from "./BlendingFragmentShader.glsl"
 import passThroughFragmentShader from "./PassThroughFragmentShader.glsl"
 
+import skullFile from "../models/skull/scene.gltf";
+
 const occlusionShader = {
     uniforms: {
         tDiffuse: {value: null},
@@ -68,7 +70,6 @@ const loader = new GLTFLoader();
 const scene = new Scene();
 let camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-
 const renderer = new WebGLRenderer();
 let controls = new OrbitControls(camera, renderer.domElement);
 
@@ -76,7 +77,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-loader.load('scene.gltf', skull => {
+loader.load(skullFile, skull => {
     skull.scene.traverse(o => {
         if (o instanceof Mesh) {
             let material = new MeshBasicMaterial({color: "#000000"});

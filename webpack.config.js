@@ -39,6 +39,14 @@ const config = {
       {
         test: /\.glsl$/,
         use: 'raw-loader'
+      },
+      {
+        test: /\.gltf$/,
+        loader: 'gltf-webpack-loader',
+      },
+      {
+        test: /\.(jpeg|bin)/,
+        loader: 'file-loader',
       }
     ]
   },
