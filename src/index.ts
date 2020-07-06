@@ -5,7 +5,7 @@ import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {
     AmbientLight,
     AxesHelper, Camera,
-    LinearFilter,
+    LinearFilter, Material,
     Mesh,
     MeshBasicMaterial,
     PerspectiveCamera,
@@ -26,6 +26,7 @@ import blendingFragmentShader from "./BlendingFragmentShader.glsl"
 import passThroughFragmentShader from "./PassThroughFragmentShader.glsl"
 
 import skullFile from "../models/skull/scene.gltf";
+import {CopyShader} from "three/examples/jsm/shaders/CopyShader";
 
 interface SceneComposers {
     occlusionComposer: EffectComposer,
@@ -139,8 +140,8 @@ function composeEffects(renderer: WebGLRenderer, scene: Scene, camera: Perspecti
     let scatteringPass = new ShaderPass(occlusionShader);
     occlusionComposer.addPass(scatteringPass);
 
-    let dummyPass = new ShaderPass(passThroughShader);
-    occlusionComposer.addPass(dummyPass);
+    let finalPass = new ShaderPass(CopyShader);
+    occlusionComposer.addPass(finalPass);
 
     let sceneComposer = new EffectComposer(renderer);
     sceneComposer.addPass(new RenderPass(scene, camera));
@@ -157,10 +158,11 @@ function update() {}
 
 function render(camera: Camera, {occlusionComposer, sceneComposer}: SceneComposers) {
     camera.layers.set(OCCLUSION_LAYER);
+    renderer.setClearColor('#342f46')
     occlusionComposer.render();
 
     camera.layers.set(DEFAULT_LAYER);
-    renderer.setClearColor("#030509");
+        renderer.setClearColor("#030509");
     sceneComposer.render();
 }
 
