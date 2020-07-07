@@ -70,18 +70,16 @@ function setUpSceneSelection() {
     gui.domElement.style.float = "left";
     gui.addFolder("Scene selection")
 
-    let scenes = {
-        "Skull1": SkullScene,
-        "Skull2": SkullScene2
+    let scenes: { [key: string]: () => AbstractScene } = {
+        "Skull1": () => new SkullScene(),
+        "Skull2": () => new SkullScene2()
     }
 
     let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));
     sceneSelector.onChange((selectedScene: string) => {
         let oldScene = scene;
         oldScene.destroyGUI();
-        // @ts-ignore
-        scene = new scenes[selectedScene]();
-
+        scene = scenes[selectedScene]();
     })
     sceneSelector.setValue("Skull1");
 }
