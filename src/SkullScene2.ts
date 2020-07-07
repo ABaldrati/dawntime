@@ -2,48 +2,26 @@ import skullFile from "../models/skull/scene.gltf";
 import {
     AmbientLight,
     AxesHelper,
-    Camera,
-    LinearFilter,
     Mesh,
     MeshBasicMaterial,
     PerspectiveCamera,
     PointLight,
-    RGBFormat,
-    Scene, SphereBufferGeometry,
-    WebGLRenderTarget
+    SphereBufferGeometry
 } from "three";
-import {GUI} from "dat.gui";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
-import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass";
-import {HorizontalBlurShader} from "three/examples/jsm/shaders/HorizontalBlurShader";
-import {VerticalBlurShader} from "three/examples/jsm/shaders/VerticalBlurShader";
-import {CopyShader} from "three/examples/jsm/shaders/CopyShader";
-import {
-    blendingShader, DEFAULT_LAYER,
-    loader,
-    OCCLUSION_LAYER,
-    occlusionShader,
-    renderer,
-    updateShaderLightPosition
-} from "./index";
+import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
+import {AbstractScene} from "./AbstractScene";
 
-export class SkullScene2 {
-    private scene: Scene;
-    private gui: GUI;
+export class SkullScene2 extends AbstractScene {
     private occlusionComposer: EffectComposer;
     private sceneComposer: EffectComposer;
-    private camera: Camera;
     private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
-    private shaderUniforms: any = {}
 
     constructor() {
-        this.scene = new Scene();
-        this.gui = new GUI();
-        this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
+        super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10))
         this.controls = new OrbitControls(this.camera, renderer.domElement);
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
@@ -52,45 +30,20 @@ export class SkullScene2 {
         this.buildGUI();
     }
 
-    composeEffects() {
-        const renderTargetParameters = {
-            minFilter: LinearFilter,
-            magFilter: LinearFilter,
-            format: RGBFormat,
-            stencilBuffer: false
-        };
-        let occlusionRenderTarget = new WebGLRenderTarget(window.innerWidth / 2, window.innerHeight / 2, renderTargetParameters)
+    public render() {
+        this.controls.update();
 
-        let occlusionComposer = new EffectComposer(renderer, occlusionRenderTarget);
-        occlusionComposer.addPass(new RenderPass(this.scene, this.camera));
+        this.camera.layers.set(OCCLUSION_LAYER);
+        renderer.setClearColor("#111111")
 
-        let scatteringPass = new ShaderPass(occlusionShader);
-        this.shaderUniforms = scatteringPass.uniforms;
-        occlusionComposer.addPass(scatteringPass);
+        this.occlusionComposer.render();
+        this.camera.layers.set(DEFAULT_LAYER);
+        renderer.setClearColor("#030509");
 
-        let horizontalBlurPass = new ShaderPass(HorizontalBlurShader);
-        horizontalBlurPass.uniforms.h.value = 0.4 / occlusionRenderTarget.height;
-        // occlusionComposer.addPass(horizontalBlurPass);
-
-        let verticalBlurPass = new ShaderPass(VerticalBlurShader);
-        verticalBlurPass.uniforms.v.value = 0.4 / occlusionRenderTarget.width;
-        // occlusionComposer.addPass(verticalBlurPass);
-
-        let finalPass = new ShaderPass(CopyShader);
-        occlusionComposer.addPass(finalPass);
-
-        let sceneComposer = new EffectComposer(renderer);
-        sceneComposer.addPass(new RenderPass(this.scene, this.camera));
-
-        let blendingPass = new ShaderPass(blendingShader);
-        blendingPass.uniforms.tOcclusion.value = occlusionRenderTarget.texture;
-        blendingPass.renderToScreen = true;
-        sceneComposer.addPass(blendingPass);
-
-        return [occlusionComposer, sceneComposer]
+        this.sceneComposer.render();
     }
 
-    buildScene() {
+    protected buildScene() {
         loader.load(skullFile, skull => {
             skull.scene.traverse(o => {
                 if (o instanceof Mesh) {
@@ -125,11 +78,11 @@ export class SkullScene2 {
         this.lightSphere.layers.set(OCCLUSION_LAYER)
         this.scene.add(this.lightSphere);
 
-        this.camera.position.z = 10;
+        this.camera.position.z = 2;
         this.controls.update();
     }
 
-    private buildGUI() {
+    protected buildGUI() {
         this.gui.addFolder("Light Position")
         let xController = this.gui.add(this.lightSphere.position, "x", -10, 10, 0.01);
         let yController = this.gui.add(this.lightSphere.position, "y", -10, 10, 0.01);
@@ -173,22 +126,5 @@ export class SkullScene2 {
                 }
             }
         })
-    }
-
-    render() {
-        this.controls.update();
-
-        this.camera.layers.set(OCCLUSION_LAYER);
-        renderer.setClearColor("#111111")
-
-        this.occlusionComposer.render();
-        this.camera.layers.set(DEFAULT_LAYER);
-        renderer.setClearColor("#030509");
-
-        this.sceneComposer.render();
-    }
-
-    destroyGUI() {
-        this.gui.destroy();
     }
 }

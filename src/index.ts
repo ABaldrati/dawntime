@@ -9,6 +9,7 @@ import blendingFragmentShader from "./BlendingFragmentShader.glsl"
 import {GUI} from 'dat.gui';
 import {SkullScene} from "./SkullScene";
 import {SkullScene2} from "./SkullScene2";
+import {AbstractScene} from "./AbstractScene";
 
 const occlusionShader = {
     uniforms: {
@@ -48,7 +49,7 @@ renderer.domElement.style.top = "0";
 renderer.domElement.style.left = "0";
 document.body.appendChild(renderer.domElement);
 
-let scene: SkullScene | SkullScene2 = new SkullScene();
+let scene: AbstractScene = new SkullScene();
 
 export {renderer, occlusionShader, blendingShader, loader, OCCLUSION_LAYER, DEFAULT_LAYER, updateShaderLightPosition};
 
@@ -66,21 +67,23 @@ function updateShaderLightPosition(lightSphere: Mesh, camera: Camera, shaderUnif
 
 function setUpSceneSelection() {
     let gui = new GUI();
+    gui.domElement.style.float = "left";
     gui.addFolder("Scene selection")
 
-    let scenes: { [key: string]: typeof SkullScene | typeof SkullScene2} = {
+    let scenes = {
         "Skull1": SkullScene,
         "Skull2": SkullScene2
     }
 
     let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));
-    sceneSelector.setValue("Skull1");
     sceneSelector.onChange((selectedScene: string) => {
-        scene = new scenes[selectedScene]();
-
         let oldScene = scene;
         oldScene.destroyGUI();
+        // @ts-ignore
+        scene = new scenes[selectedScene]();
+
     })
+    sceneSelector.setValue("Skull1");
 }
 
 setUpSceneSelection()
