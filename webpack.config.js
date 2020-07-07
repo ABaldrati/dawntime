@@ -45,9 +45,9 @@ const config = {
         loader: 'gltf-webpack-loader',
       },
       {
-        test: /\.(jpeg|bin)/,
+        test: /\.(\d+|png|jpg|jpeg|bin)/,
         loader: 'file-loader',
-      }
+      },
     ]
   },
   devtool: 'inline-source-map',
