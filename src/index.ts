@@ -1,4 +1,3 @@
-import "./styles.scss"
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import {Camera, Mesh, Vector2, WebGLRenderer} from "three";
 
@@ -10,6 +9,7 @@ import {GUI} from 'dat.gui';
 import {SkullScene} from "./SkullScene";
 import {SkullScene2} from "./SkullScene2";
 import {AbstractScene} from "./AbstractScene";
+import {WarehouseScene} from "./WarehouseScene";
 
 const occlusionShader = {
     uniforms: {
@@ -72,7 +72,8 @@ function setUpSceneSelection() {
 
     let scenes: { [key: string]: () => AbstractScene } = {
         "Skull1": () => new SkullScene(),
-        "Skull2": () => new SkullScene2()
+        "Skull2": () => new SkullScene2(),
+        "Warehouse": () => new WarehouseScene()
     }
 
     let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));
