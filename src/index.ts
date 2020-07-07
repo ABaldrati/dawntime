@@ -70,13 +70,15 @@ const passThroughShader = {
     fragmentShader: passThroughFragmentShader
 }
 
+let shaderUniforms: any = {};
+
 const DEFAULT_LAYER = 0;
 const OCCLUSION_LAYER = 1;
 
 const axesHelper = new AxesHelper(10);
 const loader = new GLTFLoader();
 const scene = new Scene();
-const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
 
 const renderer = new WebGLRenderer();
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -111,7 +113,9 @@ function buildScene() {
         console.error(error);
     });
 
-    let ambientLight = new AmbientLight("#2c3e50");
+    scene.add(new AxesHelper(10))
+
+    let ambientLight = new AmbientLight("#2c3e50",1.2);
     scene.add(ambientLight);
 
     let pointLight = new PointLight("#ffffff");
@@ -162,11 +166,11 @@ function update() {}
 
 function render(camera: Camera, {occlusionComposer, sceneComposer}: SceneComposers) {
     camera.layers.set(OCCLUSION_LAYER);
-    renderer.setClearColor('#342f46')
+    renderer.setClearColor("#111111")
     occlusionComposer.render();
 
     camera.layers.set(DEFAULT_LAYER);
-        renderer.setClearColor("#030509");
+    renderer.setClearColor("#030509");
     sceneComposer.render();
 }
 
