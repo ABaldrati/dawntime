@@ -1,40 +1,14 @@
 import "./styles.scss"
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
-import {
-    AmbientLight,
-    AxesHelper,
-    Camera,
-    LinearFilter,
-    Mesh,
-    MeshBasicMaterial,
-    PerspectiveCamera,
-    PointLight,
-    RGBFormat,
-    Scene,
-    SphereBufferGeometry,
-    Vector2,
-    WebGLRenderer,
-    WebGLRenderTarget
-} from "three";
-import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
-import {ShaderPass} from "three/examples/jsm/postprocessing/ShaderPass";
+import {Camera, Mesh, Vector2, WebGLRenderer} from "three";
 
 import volumetricLightScatteringShader from './FragmentVolumetricScattering.glsl'
 import passThroughVertexShader from "./PassThroughVertexShader.glsl"
 import blendingFragmentShader from "./BlendingFragmentShader.glsl"
-import passThroughFragmentShader from "./PassThroughFragmentShader.glsl"
 
-import skullFile from "../models/skull/scene.gltf";
-import {CopyShader} from "three/examples/jsm/shaders/CopyShader";
-
-import dat from 'dat.gui';
-
-interface SceneComposers {
-    occlusionComposer: EffectComposer,
-    sceneComposer: EffectComposer
-}
+import {GUI} from 'dat.gui';
+import {SkullScene} from "./SkullScene";
+import {SkullScene2} from "./SkullScene2";
 
 const occlusionShader = {
     uniforms: {
@@ -61,28 +35,11 @@ const blendingShader = {
     fragmentShader: blendingFragmentShader
 }
 
-const passThroughShader = {
-    uniforms: {
-        tDiffuse: {value: null},
-        tOcclusion: {value: null}
-    },
-
-    vertexShader: passThroughVertexShader,
-    fragmentShader: passThroughFragmentShader
-}
-
-let shaderUniforms: any = {};
-
 const DEFAULT_LAYER = 0;
 const OCCLUSION_LAYER = 1;
 
-const axesHelper = new AxesHelper(10);
 const loader = new GLTFLoader();
-const scene = new Scene();
-const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
-
 const renderer = new WebGLRenderer();
-const controls = new OrbitControls(camera, renderer.domElement);
 
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -91,151 +48,40 @@ renderer.domElement.style.top = "0";
 renderer.domElement.style.left = "0";
 document.body.appendChild(renderer.domElement);
 
-const effectComposers = composeEffects(renderer, scene, camera);
+let scene: SkullScene | SkullScene2 = new SkullScene();
 
-function buildScene() {
-    loader.load(skullFile, skull => {
-        skull.scene.traverse(o => {
-            if (o instanceof Mesh) {
-                let material = new MeshBasicMaterial({color: "#000000"});
-                let occlusionObject = new Mesh(o.geometry, material)
+export {renderer, occlusionShader, blendingShader, loader, OCCLUSION_LAYER, DEFAULT_LAYER, updateShaderLightPosition};
 
-                o.add(axesHelper);
-
-                occlusionObject.add(new AxesHelper(10));
-                occlusionObject.layers.set(OCCLUSION_LAYER)
-                o.parent?.add(occlusionObject)
-            }
-        })
-
-        scene.add(skull.scene);
-        skull.scene.position.z = 2;
-    }, undefined, error => {
-        console.error(error);
-    });
-
-    scene.add(new AxesHelper(10))
-
-    let ambientLight = new AmbientLight("#2c3e50",1.2);
-    scene.add(ambientLight);
-
-    let pointLight = new PointLight("#ffffff");
-    scene.add(pointLight);
-
-    let geometry = new SphereBufferGeometry(0.5, 32, 32);
-    let material = new MeshBasicMaterial({color: 0xffffff});
-    let lightSphere = new Mesh(geometry, material);
-    lightSphere.layers.set(OCCLUSION_LAYER)
-    scene.add(lightSphere);
-
-    camera.position.z = 6;
-    controls.update();
-    setUpGUI({lightSphere, pointLight})
+function onFrame() {
+    requestAnimationFrame(onFrame);
+    scene.render();
 }
 
-function composeEffects(renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera): SceneComposers {
-    const renderTargetParameters = {
-        minFilter: LinearFilter,
-        magFilter: LinearFilter,
-        format: RGBFormat,
-        stencilBuffer: false
-    };
-    let occlusionRenderTarget = new WebGLRenderTarget(window.innerWidth / 2, window.innerHeight / 2, renderTargetParameters)
-
-    let occlusionComposer = new EffectComposer(renderer, occlusionRenderTarget);
-    occlusionComposer.addPass(new RenderPass(scene, camera));
-
-    let scatteringPass = new ShaderPass(occlusionShader);
-    shaderUniforms = scatteringPass.uniforms;
-    occlusionComposer.addPass(scatteringPass);
-
-    let finalPass = new ShaderPass(CopyShader);
-    occlusionComposer.addPass(finalPass);
-
-    let sceneComposer = new EffectComposer(renderer);
-    sceneComposer.addPass(new RenderPass(scene, camera));
-
-    let blendingPass = new ShaderPass(blendingShader);
-    blendingPass.uniforms.tOcclusion.value = occlusionRenderTarget.texture;
-    blendingPass.renderToScreen = true;
-    sceneComposer.addPass(blendingPass);
-
-    return {occlusionComposer, sceneComposer}
-}
-
-function update() {}
-
-function render(camera: Camera, {occlusionComposer, sceneComposer}: SceneComposers) {
-    camera.layers.set(OCCLUSION_LAYER);
-    renderer.setClearColor("#111111")
-    occlusionComposer.render();
-
-    camera.layers.set(DEFAULT_LAYER);
-    renderer.setClearColor("#030509");
-    sceneComposer.render();
-}
-
-function onFrame(camera: Camera) {
-    requestAnimationFrame(() => onFrame(camera));
-    controls.update();
-    update();
-    render(camera, effectComposers);
-}
-
-function updateShaderLightPosition(lightSphere: Mesh) {
+function updateShaderLightPosition(lightSphere: Mesh, camera: Camera, shaderUniforms: any) {
     let screenPosition = lightSphere.position.clone().project(camera);
     let newX = 0.5 * (screenPosition.x + 1);
     let newY = 0.5 * (screenPosition.y + 1);
     shaderUniforms.lightPosition.value.set(newX, newY)
-
 }
 
-function setUpGUI({ pointLight, lightSphere }: { pointLight: PointLight, lightSphere: Mesh}) {
-    let gui = new dat.GUI();
-    gui.addFolder("Light Position")
-    let xController = gui.add(lightSphere.position, "x", -10, 10, 0.01);
-    let yController = gui.add(lightSphere.position, "y", -10, 10, 0.01);
-    let zController = gui.add(lightSphere.position, "z", -20, 20, 0.01);
+function setUpSceneSelection() {
+    let gui = new GUI();
+    gui.addFolder("Scene selection")
 
-    controls.addEventListener("change", () => updateShaderLightPosition(lightSphere))
+    let scenes: { [key: string]: typeof SkullScene | typeof SkullScene2} = {
+        "Skull1": SkullScene,
+        "Skull2": SkullScene2
+    }
 
-    xController.onChange(x => {
-        pointLight.position.x = x;
-        updateShaderLightPosition(lightSphere);
-    })
-    yController.onChange(y => {
-        pointLight.position.y = y;
-        updateShaderLightPosition(lightSphere);
-    })
-    zController.onChange(z => {
-        pointLight.position.z = z;
-        updateShaderLightPosition(lightSphere);
-    })
+    let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));
+    sceneSelector.setValue("Skull1");
+    sceneSelector.onChange((selectedScene: string) => {
+        scene = new scenes[selectedScene]();
 
-    gui.addFolder("Volumetric scattering parameters");
-    Object.keys(shaderUniforms).forEach((k: string) => {
-        if (k != "tDiffuse" && k != "lightPosition") {
-            let prop = shaderUniforms[k]
-            switch (k) {
-                case "weight":
-                    gui.add(prop, "value", 0, 1, 0.01).name(k);
-                    break;
-                case "exposure":
-                    gui.add(prop, "value", 0, 1, 0.01).name(k);
-                    break;
-                case "decay":
-                    gui.add(prop, "value", 0.8, 1, 0.001).name(k);
-                    break;
-                case "density":
-                    gui.add(prop, "value", 0, 1, 0.01).name(k);
-                    break;
-                case "samples":
-                    gui.add(prop, "value", 0, 200, 1).name(k);
-                    break;
-            }
-        }
+        let oldScene = scene;
+        oldScene.destroyGUI();
     })
 }
 
-buildScene();
-onFrame(camera);
+setUpSceneSelection()
+onFrame();
