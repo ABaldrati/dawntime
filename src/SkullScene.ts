@@ -8,14 +8,11 @@ import {
     PointLight,
     SphereBufferGeometry
 } from "three";
-import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 
 export class SkullScene extends AbstractScene {
-    private occlusionComposer: EffectComposer;
-    private sceneComposer: EffectComposer;
     private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
@@ -26,7 +23,6 @@ export class SkullScene extends AbstractScene {
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
         this.buildScene();
-        [this.occlusionComposer, this.sceneComposer] = this.composeEffects()
         this.buildGUI();
     }
 

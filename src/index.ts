@@ -84,5 +84,10 @@ function setUpSceneSelection() {
     sceneSelector.setValue("Skull1");
 }
 
+window.addEventListener("resize", _ => {
+    scene.updateSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+})
+
 setUpSceneSelection()
 onFrame();

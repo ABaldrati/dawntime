@@ -1,4 +1,4 @@
-import {Camera, LinearFilter, RGBFormat, Scene, WebGLRenderTarget} from "three";
+import {Camera, LinearFilter, PerspectiveCamera, RGBFormat, Scene, WebGLRenderTarget} from "three";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {blendingShader, occlusionShader, renderer} from "./index";
 import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
@@ -12,16 +12,26 @@ export abstract class AbstractScene {
     protected scene: Scene;
     protected gui: GUI;
     protected shaderUniforms: any = {}
+    protected occlusionComposer: EffectComposer;
+    protected sceneComposer: EffectComposer;
 
-    constructor(protected camera: Camera) {
+    constructor(protected camera: PerspectiveCamera) {
         this.scene = new Scene();
         this.gui = new GUI();
+        [this.occlusionComposer, this.sceneComposer] = this.composeEffects()
     }
 
     public abstract render(): void;
 
     public destroyGUI() {
         this.gui.destroy();
+    }
+
+    public updateSize(width: number, height: number) {
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+        this.occlusionComposer.setSize(width * 0.5, height * 0.5);
+        this.sceneComposer.setSize(width, height)
     }
 
     protected abstract buildScene(): void;
