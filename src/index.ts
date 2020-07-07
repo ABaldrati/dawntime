@@ -4,8 +4,9 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {
     AmbientLight,
-    AxesHelper, Camera,
-    LinearFilter, Material,
+    AxesHelper,
+    Camera,
+    LinearFilter,
     Mesh,
     MeshBasicMaterial,
     PerspectiveCamera,
