@@ -28,6 +28,8 @@ import passThroughFragmentShader from "./PassThroughFragmentShader.glsl"
 import skullFile from "../models/skull/scene.gltf";
 import {CopyShader} from "three/examples/jsm/shaders/CopyShader";
 
+import dat from 'dat.gui';
+
 interface SceneComposers {
     occlusionComposer: EffectComposer,
     sceneComposer: EffectComposer
@@ -123,6 +125,7 @@ function buildScene() {
 
     camera.position.z = 6;
     controls.update();
+    setUpGUI({lightSphere, pointLight})
 }
 
 function composeEffects(renderer: WebGLRenderer, scene: Scene, camera: PerspectiveCamera): SceneComposers {
@@ -138,6 +141,7 @@ function composeEffects(renderer: WebGLRenderer, scene: Scene, camera: Perspecti
     occlusionComposer.addPass(new RenderPass(scene, camera));
 
     let scatteringPass = new ShaderPass(occlusionShader);
+    shaderUniforms = scatteringPass.uniforms;
     occlusionComposer.addPass(scatteringPass);
 
     let finalPass = new ShaderPass(CopyShader);
@@ -171,6 +175,61 @@ function onFrame(camera: Camera) {
     controls.update();
     update();
     render(camera, effectComposers);
+}
+
+function updateShaderLightPosition(lightSphere: Mesh) {
+    let screenPosition = lightSphere.position.clone().project(camera);
+    let newX = 0.5 * (screenPosition.x + 1);
+    let newY = 0.5 * (screenPosition.y + 1);
+    shaderUniforms.lightPosition.value.set(newX, newY)
+
+}
+
+function setUpGUI({ pointLight, lightSphere }: { pointLight: PointLight, lightSphere: Mesh}) {
+    let gui = new dat.GUI();
+    gui.addFolder("Light Position")
+    let xController = gui.add(lightSphere.position, "x", -10, 10, 0.01);
+    let yController = gui.add(lightSphere.position, "y", -10, 10, 0.01);
+    let zController = gui.add(lightSphere.position, "z", -20, 20, 0.01);
+
+    controls.addEventListener("change", () => updateShaderLightPosition(lightSphere))
+
+    xController.onChange(x => {
+        pointLight.position.x = x;
+        updateShaderLightPosition(lightSphere);
+    })
+    yController.onChange(y => {
+        pointLight.position.y = y;
+        updateShaderLightPosition(lightSphere);
+    })
+    zController.onChange(z => {
+        pointLight.position.z = z;
+        updateShaderLightPosition(lightSphere);
+    })
+
+    gui.addFolder("Volumetric scattering parameters");
+    Object.keys(shaderUniforms).forEach((k: string) => {
+        if (k != "tDiffuse" && k != "lightPosition") {
+            let prop = shaderUniforms[k]
+            switch (k) {
+                case "weight":
+                    gui.add(prop, "value", 0, 1, 0.01).name(k);
+                    break;
+                case "exposure":
+                    gui.add(prop, "value", 0, 1, 0.01).name(k);
+                    break;
+                case "decay":
+                    gui.add(prop, "value", 0.8, 1, 0.001).name(k);
+                    break;
+                case "density":
+                    gui.add(prop, "value", 0, 1, 0.01).name(k);
+                    break;
+                case "samples":
+                    gui.add(prop, "value", 0, 200, 1).name(k);
+                    break;
+            }
+        }
+    })
 }
 
 buildScene();
