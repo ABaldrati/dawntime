@@ -84,6 +84,7 @@ function setUpSceneSelection() {
         let oldScene = scene;
         oldScene.destroyGUI();
         scene = scenes[selectedScene]();
+        scene.updateSize(window.innerWidth, window.innerHeight);
     })
     sceneSelector.setValue("Skull");
 }
