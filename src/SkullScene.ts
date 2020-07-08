@@ -11,6 +11,7 @@ import {
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
+import {GUI} from "dat.gui";
 
 export class SkullScene extends AbstractScene {
     private controls: OrbitControls;
@@ -79,10 +80,11 @@ export class SkullScene extends AbstractScene {
     }
 
     protected buildGUI() {
-        this.gui.addFolder("Light Position")
-        let xController = this.gui.add(this.lightSphere.position, "x", -10, 10, 0.01);
-        let yController = this.gui.add(this.lightSphere.position, "y", -10, 10, 0.01);
-        let zController = this.gui.add(this.lightSphere.position, "z", -20, 20, 0.01);
+        let lightPositionFolder = this.gui.addFolder("Light Position")
+        let xController = lightPositionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
+        let yController = lightPositionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);
+        let zController = lightPositionFolder.add(this.lightSphere.position, "z", -20, 20, 0.01);
+        lightPositionFolder.open()
 
         this.controls.addEventListener("change", () => updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms))
 
@@ -99,25 +101,25 @@ export class SkullScene extends AbstractScene {
             updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
         })
 
-        this.gui.addFolder("Volumetric scattering parameters");
+        let scatteringFolder = this.gui.addFolder("Volumetric scattering parameters");
         Object.keys(this.shaderUniforms).forEach((k: string) => {
             if (k != "tDiffuse" && k != "lightPosition") {
                 let prop = this.shaderUniforms[k]
                 switch (k) {
                     case "weight":
-                        this.gui.add(prop, "value", 0, 1, 0.01).name(k);
+                        scatteringFolder.add(prop, "value", 0, 1, 0.01).name(k);
                         break;
                     case "exposure":
-                        this.gui.add(prop, "value", 0, 1, 0.01).name(k);
+                        scatteringFolder.add(prop, "value", 0, 1, 0.01).name(k);
                         break;
                     case "decay":
-                        this.gui.add(prop, "value", 0.8, 1, 0.001).name(k);
+                        scatteringFolder.add(prop, "value", 0.8, 1, 0.001).name(k);
                         break;
                     case "density":
-                        this.gui.add(prop, "value", 0, 1, 0.01).name(k);
+                        scatteringFolder.add(prop, "value", 0, 1, 0.01).name(k);
                         break;
                     case "samples":
-                        this.gui.add(prop, "value", 0, 200, 1).name(k);
+                        scatteringFolder.add(prop, "value", 0, 200, 1).name(k);
                         break;
                 }
             }
