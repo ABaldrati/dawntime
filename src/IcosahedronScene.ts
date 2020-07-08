@@ -153,6 +153,10 @@ export class IcosahedronScene extends AbstractScene {
         let resetScene = () => {
             this.gui.revert(tempgui);
             this.camera.position.set(0, 0, 8);
+            this.icosahedronGroupScene.position.set(0,0,4)
+            this.icosahedronGroupScene.rotation.x = 0;
+            this.icosahedronGroupScene.rotation.z = 0;
+            this.angle = 0;
             this.controls.update();
         };
 
@@ -162,6 +166,10 @@ export class IcosahedronScene extends AbstractScene {
 
         let resetPosition = () => {
             this.camera.position.set(0, 0, 8);
+            this.icosahedronGroupScene.position.set(0,0,4)
+            this.angle = 0;
+            this.icosahedronGroupScene.rotation.x = 0;
+            this.icosahedronGroupScene.rotation.z = 0;
             this.controls.update();
         };
         let resetFolder = this.gui.addFolder("Scene management")
