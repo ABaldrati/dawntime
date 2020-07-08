@@ -46,6 +46,9 @@ export class ShipScene extends AbstractScene {
     }
 
     public render() {
+        this.controls.update();
+        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
+
         this.camera.layers.set(OCCLUSION_LAYER);
         renderer.setClearColor("hsl(200,33%,7%)")
 
@@ -59,8 +62,6 @@ export class ShipScene extends AbstractScene {
         const now = Date.now();
         const y = Math.sin(now / 1500);
         this.sea.then(s => s.position.setY(-7 + y));
-
-        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
     }
 
     protected buildScene() {
