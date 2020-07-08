@@ -76,7 +76,7 @@ function setUpSceneSelection() {
         "Skull": () => SkullScene.getInstance(),
         "Warehouse": () => WarehouseScene.getInstance(),
         "Icosahedron": () => IcosahedronScene.getInstance(),
-        "Ship": () => new ShipScene(),
+        "Ship": () => ShipScene.getInstance(),
     }
 
     let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));

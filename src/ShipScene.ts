@@ -15,14 +15,17 @@ import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosit
 import {AbstractScene} from "./AbstractScene";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
+import {GUI} from "dat.gui";
 
 export class ShipScene extends AbstractScene {
+    private static instance: ShipScene;
+
     private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
     private sea: Promise<Object3D>;
 
-    constructor() {
+    private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000))
         this.controls = new OrbitControls(this.camera, renderer.domElement)
         this.pointLight = undefined as any as PointLight;
@@ -30,6 +33,16 @@ export class ShipScene extends AbstractScene {
         this.sea = undefined as any as Promise<Object3D>;
         this.buildScene();
         this.buildGUI();
+    }
+
+    static getInstance(): ShipScene {
+        if (!ShipScene.instance) {
+            ShipScene.instance = new ShipScene();
+        } else {
+            ShipScene.instance.buildGUI();
+        }
+
+        return ShipScene.instance;
     }
 
     public render() {
@@ -111,10 +124,13 @@ export class ShipScene extends AbstractScene {
     }
 
     protected buildGUI() {
-        this.gui.addFolder("Light Position")
-        let xController = this.gui.add(this.lightSphere.position, "x", -10, 10, 0.01);
-        let yController = this.gui.add(this.lightSphere.position, "y", -10, 10, 0.01);
-        let zController = this.gui.add(this.lightSphere.position, "z", -25, 25, 0.01);
+        this.gui = new GUI();
+
+        let positionFolder = this.gui.addFolder("Light Position")
+        let xController = positionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
+        let yController = positionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);
+        let zController = positionFolder.add(this.lightSphere.position, "z", -25, 25, 0.01);
+        positionFolder.open();
 
         xController.onChange(x => {
             this.pointLight.position.x = x;
