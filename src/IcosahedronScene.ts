@@ -12,13 +12,14 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
+import {loadModel} from "./utils";
 
 export class IcosahedronScene extends AbstractScene {
     private static instance: IcosahedronScene;
     private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
-    private icosahedronGroupScene: Group;
+    private icosahedronGroupScene: Promise<Group>;
     private angle: number;
     private animationEnabled: boolean;
 
@@ -28,7 +29,7 @@ export class IcosahedronScene extends AbstractScene {
         this.controls = new OrbitControls(this.camera, renderer.domElement);
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
-        this.icosahedronGroupScene = undefined as any as Group;
+        this.icosahedronGroupScene = undefined as any as Promise<Group>;
         this.angle = 0;
         this.animationEnabled = true;
         this.buildScene();
@@ -65,7 +66,7 @@ export class IcosahedronScene extends AbstractScene {
         let firstIcosahedronMaterial = new MeshPhysicalMaterial({color: "#ff0000"});
         let secondIcosahedronMaterial = new MeshPhysicalMaterial({color: "#0f45ec"});
 
-        loader.load(icosahedronFile, icosahedron => {
+        this.icosahedronGroupScene = loadModel(icosahedronFile).then(icosahedron => {
             icosahedron.scene.traverse(o => {
                 if (o instanceof Mesh) {
                     if (firstObject) {
@@ -84,12 +85,10 @@ export class IcosahedronScene extends AbstractScene {
             })
 
             this.scene.add(icosahedron.scene);
-            this.icosahedronGroupScene = icosahedron.scene
             icosahedron.scene.position.z = 4;
-        }, undefined, error => {
-            console.error(error);
-        });
 
+            return icosahedron.scene;
+        });
 
         let ambientLight = new AmbientLight("#2c3e50", 1);
         this.scene.add(ambientLight);
@@ -150,12 +149,14 @@ export class IcosahedronScene extends AbstractScene {
         let tempgui = new GUI(this.gui)
         tempgui.domElement.style.display = "none";
 
-        let resetScene = () => {
+        let resetScene = async () => {
+            let icosahedronGroupScene = await this.icosahedronGroupScene;
+
             this.gui.revert(tempgui);
             this.camera.position.set(0, 0, 8);
-            this.icosahedronGroupScene.position.set(0,0,4)
-            this.icosahedronGroupScene.rotation.x = 0;
-            this.icosahedronGroupScene.rotation.z = 0;
+            icosahedronGroupScene.position.set(0,0,4)
+            icosahedronGroupScene.rotation.x = 0;
+            icosahedronGroupScene.rotation.z = 0;
             this.angle = 0;
             this.controls.update();
         };
@@ -164,12 +165,13 @@ export class IcosahedronScene extends AbstractScene {
             this.gui.revert(tempgui);
         };
 
-        let resetPosition = () => {
+        let resetPosition = async () => {
+            let icosahedronGroupScene = await this.icosahedronGroupScene
             this.camera.position.set(0, 0, 8);
-            this.icosahedronGroupScene.position.set(0,0,4)
+            icosahedronGroupScene.position.set(0,0,4)
             this.angle = 0;
-            this.icosahedronGroupScene.rotation.x = 0;
-            this.icosahedronGroupScene.rotation.z = 0;
+            icosahedronGroupScene.rotation.x = 0;
+            icosahedronGroupScene.rotation.z = 0;
             this.controls.update();
         };
         let resetFolder = this.gui.addFolder("Scene management")
@@ -189,9 +191,12 @@ export class IcosahedronScene extends AbstractScene {
             xpos = Math.sin(this.angle) * radius,
             zpos = Math.cos(this.angle) * radius;
 
-        this.icosahedronGroupScene.position.set(xpos, 0, zpos)
-        this.icosahedronGroupScene.rotation.x += 0.01;
-        this.icosahedronGroupScene.rotation.z += 0.005;
+        this.icosahedronGroupScene.then(icosahedronGroupScene => {
+            icosahedronGroupScene.position.set(xpos, 0, zpos)
+            icosahedronGroupScene.rotation.x += 0.01;
+            icosahedronGroupScene.rotation.z += 0.005;
+        });
+
         this.angle += 0.009;
     }
 }
