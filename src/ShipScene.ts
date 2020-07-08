@@ -16,6 +16,7 @@ import {AbstractScene} from "./AbstractScene";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
 import {GUI} from "dat.gui";
+import {loadModel} from "./utils";
 
 export class ShipScene extends AbstractScene {
     private static instance: ShipScene;
@@ -65,16 +66,6 @@ export class ShipScene extends AbstractScene {
     }
 
     protected buildScene() {
-
-        let loadModel: (_: string) => Promise<GLTF> = (path: string) => {
-            return new Promise(((resolve, reject) => {
-                loader.load(path, ship => {
-                    resolve(ship);
-                }, undefined, error => {
-                    reject(error);
-                });
-            }))
-        };
         this.sea = Promise.all([loadModel(shipFile), loadModel(seaFile)])
             .then(([ship, sea]: [GLTF, GLTF]) => {
                 ship.scene.traverse(o => {
