@@ -59,7 +59,6 @@ export class WarehouseScene extends AbstractScene {
             console.error(error);
         });
 
-        this.scene.add(new AxesHelper(10))
 
         let ambientLight = new AmbientLight("#2c3e50", 4);
         this.scene.add(ambientLight);

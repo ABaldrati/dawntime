@@ -75,4 +75,6 @@ export abstract class AbstractScene {
 
         return [occlusionComposer, sceneComposer]
     }
+
+    public update() {}
 }

@@ -10,6 +10,7 @@ import {SkullScene} from "./SkullScene";
 import {SkullScene2} from "./SkullScene2";
 import {AbstractScene} from "./AbstractScene";
 import {WarehouseScene} from "./WarehouseScene";
+import {IcosahedronScene} from "./IcosahedronScene";
 
 const occlusionShader = {
     uniforms: {
@@ -55,6 +56,7 @@ export {renderer, occlusionShader, blendingShader, loader, OCCLUSION_LAYER, DEFA
 
 function onFrame() {
     requestAnimationFrame(onFrame);
+    scene.update()
     scene.render();
 }
 
@@ -73,7 +75,8 @@ function setUpSceneSelection() {
     let scenes: { [key: string]: () => AbstractScene } = {
         "Skull1": () => new SkullScene(),
         "Skull2": () => new SkullScene2(),
-        "Warehouse": () => new WarehouseScene()
+        "Warehouse": () => new WarehouseScene(),
+        "Icosahedron": () => new IcosahedronScene()
     }
 
     let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));
