@@ -124,5 +124,30 @@ export class SkullScene extends AbstractScene {
                 }
             }
         })
+        scatteringFolder.open();
+
+        let tempgui = new GUI(this.gui)
+        tempgui.domElement.style.display = "none";
+
+        let resetScene = () => {
+            this.gui.revert(tempgui);
+            this.camera.position.set(0,0,6);
+            this.controls.update();
+        };
+
+        let resetSliders = () => {
+            this.gui.revert(tempgui);
+        };
+
+        let resetPosition = () => {
+            this.camera.position.set(0,0,6);
+            this.controls.update();
+        };
+        let resetFolder = this.gui.addFolder("Scene management")
+        resetFolder.add({resetSliders}, 'resetSliders')
+        resetFolder.add({resetPosition}, 'resetPosition')
+        resetFolder.add({resetScene}, 'resetScene')
+
+        resetFolder.open()
     }
 }
