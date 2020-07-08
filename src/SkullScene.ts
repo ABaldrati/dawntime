@@ -29,6 +29,7 @@ export class SkullScene extends AbstractScene {
 
     public render() {
         this.controls.update();
+        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
 
         this.camera.layers.set(OCCLUSION_LAYER);
         renderer.setClearColor("#111111")
@@ -81,25 +82,10 @@ export class SkullScene extends AbstractScene {
 
     protected buildGUI() {
         let lightPositionFolder = this.gui.addFolder("Light Position")
-        let xController = lightPositionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
-        let yController = lightPositionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);
-        let zController = lightPositionFolder.add(this.lightSphere.position, "z", -20, 20, 0.01);
+        lightPositionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
+        lightPositionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);
+        lightPositionFolder.add(this.lightSphere.position, "z", -20, 20, 0.01);
         lightPositionFolder.open()
-
-        this.controls.addEventListener("change", () => updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms))
-
-        xController.onChange(x => {
-            this.pointLight.position.x = x;
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
-        })
-        yController.onChange(y => {
-            this.pointLight.position.y = y;
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
-        })
-        zController.onChange(z => {
-            this.pointLight.position.z = z;
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
-        })
 
         let scatteringFolder = this.gui.addFolder("Volumetric scattering parameters");
         Object.keys(this.shaderUniforms).forEach((k: string) => {
