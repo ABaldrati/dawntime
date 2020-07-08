@@ -1,7 +1,7 @@
 import skullFile from "../models/skull/scene.gltf";
 import {
     AmbientLight,
-    AxesHelper,
+    AxesHelper, Group,
     Mesh,
     MeshBasicMaterial,
     PerspectiveCamera,
@@ -31,8 +31,7 @@ export class SkullScene extends AbstractScene {
     static getInstance(): SkullScene {
         if (!SkullScene.instance) {
             SkullScene.instance = new SkullScene();
-        }
-        else {
+        } else {
             SkullScene.instance.buildGUI();
         }
         return SkullScene.instance;
@@ -47,9 +46,10 @@ export class SkullScene extends AbstractScene {
 
         this.occlusionComposer.render();
         this.camera.layers.set(DEFAULT_LAYER);
-        renderer.setClearColor("#030509");
+        renderer.setClearColor("#015e78");
 
         this.sceneComposer.render();
+        //console.log(this.camera.position)
     }
 
     protected buildScene() {
@@ -68,26 +68,26 @@ export class SkullScene extends AbstractScene {
             })
 
             this.scene.add(skull.scene);
-            skull.scene.position.z = 2;
+            skull.scene.position.z = 3;
         }, undefined, error => {
             console.error(error);
         });
 
         this.scene.add(new AxesHelper(10))
 
-        let ambientLight = new AmbientLight("#2c3e50", 1.2);
+        let ambientLight = new AmbientLight("#2c3e50", 2);
         this.scene.add(ambientLight);
 
         this.pointLight = new PointLight("#ffffff");
         this.scene.add(this.pointLight);
 
-        let geometry = new SphereBufferGeometry(0.5, 32, 32);
+        let geometry = new SphereBufferGeometry(0.8, 32, 32);
         let material = new MeshBasicMaterial({color: 0xffffff});
         this.lightSphere = new Mesh(geometry, material);
         this.lightSphere.layers.set(OCCLUSION_LAYER)
         this.scene.add(this.lightSphere);
 
-        this.camera.position.z = 6;
+        this.camera.position.set(-0.04, -0.68, 6.97)
         this.controls.update();
     }
 
@@ -129,7 +129,7 @@ export class SkullScene extends AbstractScene {
 
         let resetScene = () => {
             this.gui.revert(tempgui);
-            this.camera.position.set(0,0,6);
+            this.camera.position.set(-0.04, -0.68, 6.97)
             this.controls.update();
         };
 
@@ -138,7 +138,7 @@ export class SkullScene extends AbstractScene {
         };
 
         let resetPosition = () => {
-            this.camera.position.set(0,0,6);
+            this.camera.position.set(-0.04, -0.68, 6.97)
             this.controls.update();
         };
         let resetFolder = this.gui.addFolder("Scene management")
