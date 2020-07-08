@@ -19,7 +19,7 @@ export class SkullScene extends AbstractScene {
     private lightSphere: Mesh;
 
     constructor() {
-        super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10))
+        super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 35))
         this.controls = new OrbitControls(this.camera, renderer.domElement);
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
