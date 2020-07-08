@@ -145,28 +145,29 @@ export class ShipScene extends AbstractScene {
             updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
         })
 
-        this.gui.addFolder("Volumetric scattering parameters");
+        let volumetricFolder = this.gui.addFolder("Volumetric scattering parameters");
         Object.keys(this.shaderUniforms).forEach((k: string) => {
             if (k != "tDiffuse" && k != "lightPosition") {
                 let prop = this.shaderUniforms[k]
                 switch (k) {
                     case "weight":
-                        this.gui.add(prop, "value", 0, 1, 0.01).name(k);
+                        volumetricFolder.add(prop, "value", 0, 1, 0.01).name(k);
                         break;
                     case "exposure":
-                        this.gui.add(prop, "value", 0, 1, 0.01).name(k);
+                        volumetricFolder.add(prop, "value", 0, 1, 0.01).name(k);
                         break;
                     case "decay":
-                        this.gui.add(prop, "value", 0.8, 1, 0.001).name(k);
+                        volumetricFolder.add(prop, "value", 0.8, 1, 0.001).name(k);
                         break;
                     case "density":
-                        this.gui.add(prop, "value", 0, 1, 0.01).name(k);
+                        volumetricFolder.add(prop, "value", 0, 1, 0.01).name(k);
                         break;
                     case "samples":
-                        this.gui.add(prop, "value", 0, 200, 1).name(k);
+                        volumetricFolder.add(prop, "value", 0, 200, 1).name(k);
                         break;
                 }
             }
         })
+        volumetricFolder.open();
     }
 }
