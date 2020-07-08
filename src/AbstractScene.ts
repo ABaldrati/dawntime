@@ -15,7 +15,7 @@ export abstract class AbstractScene {
     protected occlusionComposer: EffectComposer;
     protected sceneComposer: EffectComposer;
 
-    constructor(protected camera: PerspectiveCamera) {
+    protected constructor(protected camera: PerspectiveCamera) {
         this.scene = new Scene();
         this.gui = new GUI();
         [this.occlusionComposer, this.sceneComposer] = this.composeEffects()

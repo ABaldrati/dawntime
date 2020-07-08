@@ -14,17 +14,28 @@ import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
 
 export class WarehouseScene extends AbstractScene {
+    private static instance: WarehouseScene;
     private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
 
-    constructor() {
+    private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200))
         this.controls = new OrbitControls(this.camera, renderer.domElement);
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
         this.buildScene();
         this.buildGUI();
+    }
+
+    static getInstance(): WarehouseScene {
+        if (!WarehouseScene.instance) {
+            WarehouseScene.instance = new WarehouseScene();
+        }
+        else {
+            WarehouseScene.instance.buildGUI();
+        }
+        return WarehouseScene.instance;
     }
 
     public render() {
@@ -91,6 +102,7 @@ export class WarehouseScene extends AbstractScene {
     }
 
     protected buildGUI() {
+        this.gui = new GUI()
         let lightPositionFolder = this.gui.addFolder("Light Position")
         let xController = lightPositionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
         let yController = lightPositionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);

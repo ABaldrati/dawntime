@@ -7,7 +7,6 @@ import blendingFragmentShader from "./BlendingFragmentShader.glsl"
 
 import {GUI} from 'dat.gui';
 import {SkullScene} from "./SkullScene";
-import {SkullScene2} from "./SkullScene2";
 import {AbstractScene} from "./AbstractScene";
 import {WarehouseScene} from "./WarehouseScene";
 import {IcosahedronScene} from "./IcosahedronScene";
@@ -50,7 +49,7 @@ renderer.domElement.style.top = "0";
 renderer.domElement.style.left = "0";
 document.body.appendChild(renderer.domElement);
 
-let scene: AbstractScene = new SkullScene();
+let scene: AbstractScene = SkullScene.getInstance();
 
 export {renderer, occlusionShader, blendingShader, loader, OCCLUSION_LAYER, DEFAULT_LAYER, updateShaderLightPosition};
 
@@ -73,10 +72,9 @@ function setUpSceneSelection() {
     gui.addFolder("Scene selection")
 
     let scenes: { [key: string]: () => AbstractScene } = {
-        "Skull1": () => new SkullScene(),
-        "Skull2": () => new SkullScene2(),
-        "Warehouse": () => new WarehouseScene(),
-        "Icosahedron": () => new IcosahedronScene()
+        "Skull": () => SkullScene.getInstance(),
+        "Warehouse": () => WarehouseScene.getInstance(),
+        "Icosahedron": () => IcosahedronScene.getInstance()
     }
 
     let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));
@@ -85,7 +83,7 @@ function setUpSceneSelection() {
         oldScene.destroyGUI();
         scene = scenes[selectedScene]();
     })
-    sceneSelector.setValue("Skull1");
+    sceneSelector.setValue("Skull");
 }
 
 window.addEventListener("resize", _ => {

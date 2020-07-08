@@ -14,6 +14,7 @@ import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
 
 export class IcosahedronScene extends AbstractScene {
+    private static instance: IcosahedronScene;
     private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
@@ -22,7 +23,7 @@ export class IcosahedronScene extends AbstractScene {
     private animationEnabled: boolean;
 
 
-    constructor() {
+    private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 35))
         this.controls = new OrbitControls(this.camera, renderer.domElement);
         this.pointLight = undefined as any as PointLight;
@@ -32,6 +33,16 @@ export class IcosahedronScene extends AbstractScene {
         this.animationEnabled = true;
         this.buildScene();
         this.buildGUI();
+    }
+
+    static getInstance(): IcosahedronScene {
+        if (!IcosahedronScene.instance) {
+            IcosahedronScene.instance = new IcosahedronScene();
+        }
+        else {
+            IcosahedronScene.instance.buildGUI();
+        }
+        return IcosahedronScene.instance;
     }
 
     public render() {
@@ -104,6 +115,7 @@ export class IcosahedronScene extends AbstractScene {
     }
 
     protected buildGUI() {
+        this.gui = new GUI();
         let lightPositionFolder = this.gui.addFolder("Light Position")
         lightPositionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
         lightPositionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);
