@@ -23,6 +23,8 @@ export abstract class AbstractScene {
 
     public abstract render(): void;
 
+    public update(): void {}
+
     public destroyGUI() {
         this.gui.destroy();
     }
@@ -75,6 +77,4 @@ export abstract class AbstractScene {
 
         return [occlusionComposer, sceneComposer]
     }
-
-    public update() {}
 }

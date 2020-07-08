@@ -55,7 +55,7 @@ export {renderer, occlusionShader, blendingShader, loader, OCCLUSION_LAYER, DEFA
 
 function onFrame() {
     requestAnimationFrame(onFrame);
-    scene.update()
+    scene.update();
     scene.render();
 }
 
