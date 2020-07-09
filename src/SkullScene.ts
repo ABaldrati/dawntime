@@ -92,7 +92,8 @@ export class SkullScene extends AbstractScene {
     }
 
     protected buildGUI() {
-        this.gui = new GUI();
+        super.buildGUI();
+
         let lightPositionFolder = this.gui.addFolder("Light Position")
         lightPositionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
         lightPositionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);

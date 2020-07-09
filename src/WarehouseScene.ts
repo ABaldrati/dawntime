@@ -102,7 +102,8 @@ export class WarehouseScene extends AbstractScene {
     }
 
     protected buildGUI() {
-        this.gui = new GUI()
+        super.buildGUI();
+
         let lightPositionFolder = this.gui.addFolder("Light Position")
         let xController = lightPositionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
         let yController = lightPositionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);

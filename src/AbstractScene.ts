@@ -10,14 +10,13 @@ import {GUI} from "dat.gui";
 
 export abstract class AbstractScene {
     protected scene: Scene;
-    protected gui: GUI;
+    protected gui: GUI = undefined as any as GUI;
     protected shaderUniforms: any = {}
     protected occlusionComposer: EffectComposer;
     protected sceneComposer: EffectComposer;
 
     protected constructor(protected camera: PerspectiveCamera) {
         this.scene = new Scene();
-        this.gui = new GUI();
         [this.occlusionComposer, this.sceneComposer] = this.composeEffects()
     }
 
@@ -38,7 +37,9 @@ export abstract class AbstractScene {
 
     protected abstract buildScene(): void;
 
-    protected buildGUI() {}
+    protected buildGUI() {
+        this.gui = new GUI();
+    }
 
     protected composeEffects() {
         const renderTargetParameters = {

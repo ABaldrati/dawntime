@@ -116,7 +116,7 @@ export class ShipScene extends AbstractScene {
     }
 
     protected buildGUI() {
-        this.gui = new GUI();
+        super.buildGUI();
 
         let positionFolder = this.gui.addFolder("Light Position")
         let xController = positionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
