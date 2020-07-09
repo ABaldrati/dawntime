@@ -4252,8 +4252,8 @@
       "source": "https://sketchfab.com/models/1d5285f2e0fd4211a27c8042496d5959",
       "title": "Abandoned Warehouse - Interior Scene"
     },
-    "generator": "Sketchfab-3.20.7",
-    "version": "2.0"
+    "generator": "Sketchfab-3.20_7",
+    "version": "2_0"
   },
   "bufferViews": [
     {
@@ -4839,7 +4839,7 @@
           ]
         }
       },
-      "name": "poutre-toit.000"
+      "name": "poutre-toit_000"
     },
     {
       "doubleSided": true,
@@ -4892,7 +4892,7 @@
           ]
         }
       },
-      "name": "poutre-toit.003"
+      "name": "poutre-toit_003"
     },
     {
       "doubleSided": true,
@@ -4912,7 +4912,7 @@
           ]
         }
       },
-      "name": "poutre-toit.002"
+      "name": "poutre-toit_002"
     },
     {
       "doubleSided": true,
@@ -4996,7 +4996,7 @@
           }
         }
       },
-      "name": "poutre-toit.001"
+      "name": "poutre-toit_001"
     },
     {
       "doubleSided": true,
@@ -7547,7 +7547,7 @@
         -0.83565000000000011,
         1
       ],
-      "name": "TexturesCom_CardboardPlain0019_2_alphamasked_S.049"
+      "name": "TexturesCom_CardboardPlain0019_2_alphamasked_S_049"
     },
     {
       "mesh": 47,
