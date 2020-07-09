@@ -11,6 +11,7 @@ import {AbstractScene} from "./AbstractScene";
 import {WarehouseScene} from "./WarehouseScene";
 import {IcosahedronScene} from "./IcosahedronScene";
 import { ShipScene } from './ShipScene';
+import {SatelliteScene} from "./SatelliteScene";
 
 const occlusionShader = {
     uniforms: {
@@ -78,6 +79,7 @@ function setUpSceneSelection() {
         "Warehouse": () => WarehouseScene.getInstance(),
         "Icosahedron": () => IcosahedronScene.getInstance(),
         "Ship": () => ShipScene.getInstance(),
+        "Satellite": () => SatelliteScene.getInstance()
     }
 
     let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));

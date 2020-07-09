@@ -5,4 +5,6 @@ declare module '*.glsl' {
 
 declare module "*.gltf";
 declare module "*.bin";
+declare module "*.jpg";
+declare module "*.png";
 declare module "*.typeface.json";
