@@ -53,6 +53,9 @@ export class ShipScene extends AbstractScene {
 
     public render() {
         if (this.loadFinished) {
+            this.controls.update();
+            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
+
             this.camera.layers.set(OCCLUSION_LAYER);
             renderer.setClearColor("hsl(200,33%,7%)")
 
@@ -104,6 +107,9 @@ export class ShipScene extends AbstractScene {
 
                 this.controls.enabled = true;
                 this.loadFinished = true;
+
+                this.controls.minDistance = 10;
+                this.controls.maxDistance = 40;
 
                 return sea.scene;
             });
