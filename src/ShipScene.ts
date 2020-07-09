@@ -2,7 +2,7 @@ import shipFile from "../models/sailing_ship/scene.gltf";
 import seaFile from "../models/sea_wave/scene.gltf";
 import {
     AmbientLight,
-    Box3,
+    Box3, Clock,
     Mesh,
     MeshBasicMaterial,
     Object3D,
@@ -25,6 +25,7 @@ export class ShipScene extends AbstractScene {
     private pointLight: PointLight;
     private lightSphere: Mesh;
     private animationEnabled = true;
+    private angle: number = 0;
     private sea: Promise<Object3D>;
 
     private constructor() {
@@ -62,12 +63,12 @@ export class ShipScene extends AbstractScene {
     }
 
     update(): void {
-        if(!this.animationEnabled){
+        if (!this.animationEnabled) {
             return super.update();
         }
-        const now = Date.now();
-        const y = Math.sin(now / 1500);
+        const y = Math.sin(this.angle);
         this.sea.then(s => s.position.setY(-7 + y));
+        this.angle += 0.01;
     }
 
     protected buildScene() {
@@ -172,8 +173,9 @@ export class ShipScene extends AbstractScene {
 
         let resetScene = () => {
             this.gui.revert(tempgui);
-            this.camera.position.set(0,0,25);
+            this.camera.position.set(0, 0, 25);
             this.sea.then(s => s.position.setY(-7));
+            this.angle = 0;
             this.controls.update();
         };
 
@@ -182,8 +184,9 @@ export class ShipScene extends AbstractScene {
         };
 
         let resetPosition = () => {
-            this.camera.position.set(0,0,25);
+            this.camera.position.set(0, 0, 25);
             this.sea.then(s => s.position.setY(-7));
+            this.angle = 0;
             this.controls.update();
         };
         let resetFolder = this.gui.addFolder("Scene management")
