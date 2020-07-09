@@ -24,6 +24,7 @@ export class ShipScene extends AbstractScene {
     private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
+    private animationEnabled = true;
     private sea: Promise<Object3D>;
 
     private constructor() {
@@ -32,6 +33,7 @@ export class ShipScene extends AbstractScene {
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
         this.sea = undefined as any as Promise<Object3D>;
+        this.animationEnabled = true;
         this.buildScene();
         this.buildGUI();
     }
@@ -60,6 +62,9 @@ export class ShipScene extends AbstractScene {
     }
 
     update(): void {
+        if(!this.animationEnabled){
+            return super.update();
+        }
         const now = Date.now();
         const y = Math.sin(now / 1500);
         this.sea.then(s => s.position.setY(-7 + y));
@@ -161,5 +166,32 @@ export class ShipScene extends AbstractScene {
             }
         })
         volumetricFolder.open();
+
+        let tempgui = new GUI(this.gui)
+        tempgui.domElement.style.display = "none";
+
+        let resetScene = () => {
+            this.gui.revert(tempgui);
+            this.camera.position.set(0,0,25);
+            this.sea.then(s => s.position.setY(-7));
+            this.controls.update();
+        };
+
+        let resetSliders = () => {
+            this.gui.revert(tempgui);
+        };
+
+        let resetPosition = () => {
+            this.camera.position.set(0,0,25);
+            this.sea.then(s => s.position.setY(-7));
+            this.controls.update();
+        };
+        let resetFolder = this.gui.addFolder("Scene management")
+
+        resetFolder.add({resetSliders}, 'resetSliders')
+        resetFolder.add({resetPosition}, 'resetPosition')
+        resetFolder.add({resetScene}, 'resetScene')
+        resetFolder.add(this, "animationEnabled")
+        resetFolder.open()
     }
 }
