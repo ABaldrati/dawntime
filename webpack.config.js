@@ -48,6 +48,11 @@ const config = {
         test: /\.(\d+|png|jpg|jpeg|bin)/,
         loader: 'file-loader',
       },
+      {
+        test: /\.json$/,
+        loader: 'file-loader',
+        type: 'javascript/auto'
+      },
     ]
   },
   devtool: 'inline-source-map',

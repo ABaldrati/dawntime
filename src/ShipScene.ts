@@ -11,12 +11,12 @@ import {
     SphereBufferGeometry,
     Vector3
 } from "three";
-import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
+import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
 import {GUI} from "dat.gui";
-import {loadModel} from "./utils";
+import {buildLoadingScreen, loadModel} from "./utils";
 
 export class ShipScene extends AbstractScene {
     private static instance: ShipScene;
@@ -27,6 +27,7 @@ export class ShipScene extends AbstractScene {
     private animationEnabled = true;
     private angle: number = 0;
     private sea: Promise<Object3D>;
+    private loadFinished: boolean;
 
     private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000))
@@ -35,6 +36,7 @@ export class ShipScene extends AbstractScene {
         this.lightSphere = undefined as any as Mesh;
         this.sea = undefined as any as Promise<Object3D>;
         this.animationEnabled = true;
+        this.loadFinished = false;
         this.buildScene();
         this.buildGUI();
     }
@@ -50,16 +52,20 @@ export class ShipScene extends AbstractScene {
     }
 
     public render() {
-        this.controls.update();
-        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
+        if (this.loadFinished) {
+            this.camera.layers.set(OCCLUSION_LAYER);
+            renderer.setClearColor("hsl(200,33%,7%)")
 
-        this.camera.layers.set(OCCLUSION_LAYER);
-        renderer.setClearColor("hsl(200,33%,7%)")
+            this.occlusionComposer.render();
+            this.camera.layers.set(DEFAULT_LAYER);
 
-        this.occlusionComposer.render();
-        this.camera.layers.set(DEFAULT_LAYER);
+            this.sceneComposer.render();
+        } else {
+            this.camera.layers.set(LOADING_LAYER);
+            renderer.setClearColor("#000000");
 
-        this.sceneComposer.render();
+            this.sceneComposer.render();
+        }
     }
 
     update(): void {
@@ -95,8 +101,17 @@ export class ShipScene extends AbstractScene {
 
                 sea.scene.add(ship.scene);
                 sea.scene.position.setY(-7);
+
+                this.controls.enabled = true;
+                this.loadFinished = true;
+
                 return sea.scene;
             });
+
+        this.controls.enabled = false;
+        let loadingScreen = buildLoadingScreen();
+        this.scene.add(loadingScreen);
+        loadingScreen.position.z = 24;
 
         let ambientLight = new AmbientLight("#4a5289", 1.2);
         this.scene.add(ambientLight);

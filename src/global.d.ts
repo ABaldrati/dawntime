@@ -5,3 +5,4 @@ declare module '*.glsl' {
 
 declare module "*.gltf";
 declare module "*.bin";
+declare module "*.typeface.json";

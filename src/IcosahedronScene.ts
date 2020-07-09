@@ -1,18 +1,18 @@
 import icosahedronFile from "../models/icosahedron/scene.gltf";
 import {
     AmbientLight,
-    AxesHelper, Group,
+    AxesHelper, DoubleSide, FontLoader, Group,
     Mesh,
-    MeshBasicMaterial, MeshPhysicalMaterial,
-    PerspectiveCamera,
+    MeshBasicMaterial, MeshPhysicalMaterial, Object3D, OrthographicCamera,
+    PerspectiveCamera, Plane, PlaneGeometry,
     PointLight, Scene,
-    SphereBufferGeometry, Vector3
+    SphereBufferGeometry, TextGeometry, Vector3, WebGLRenderTarget
 } from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
+import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
-import {loadModel} from "./utils";
+import {buildLoadingScreen, loadModel} from "./utils";
 
 export class IcosahedronScene extends AbstractScene {
     private static instance: IcosahedronScene;
@@ -22,6 +22,7 @@ export class IcosahedronScene extends AbstractScene {
     private icosahedronGroupScene: Promise<Group>;
     private angle: number;
     private animationEnabled: boolean;
+    private loadFinished: boolean;
 
 
     private constructor() {
@@ -32,6 +33,7 @@ export class IcosahedronScene extends AbstractScene {
         this.icosahedronGroupScene = undefined as any as Promise<Group>;
         this.angle = 0;
         this.animationEnabled = true;
+        this.loadFinished = false;
         this.buildScene();
         this.buildGUI();
     }
@@ -47,17 +49,24 @@ export class IcosahedronScene extends AbstractScene {
     }
 
     public render() {
-        this.controls.update();
-        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
+        if (this.loadFinished) {
+            this.controls.update();
+            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
 
-        this.camera.layers.set(OCCLUSION_LAYER);
-        renderer.setClearColor("#080808")
+            this.camera.layers.set(OCCLUSION_LAYER);
+            renderer.setClearColor("#080808")
 
-        this.occlusionComposer.render();
-        this.camera.layers.set(DEFAULT_LAYER);
-        renderer.setClearColor("#000000");
+            this.occlusionComposer.render();
+            this.camera.layers.set(DEFAULT_LAYER);
+            renderer.setClearColor("#000000");
 
-        this.sceneComposer.render();
+            this.sceneComposer.render();
+        } else {
+            this.camera.layers.set(LOADING_LAYER);
+            renderer.setClearColor("#000000");
+
+            this.sceneComposer.render();
+        }
     }
 
     protected buildScene() {
@@ -87,8 +96,16 @@ export class IcosahedronScene extends AbstractScene {
             this.scene.add(icosahedron.scene);
             icosahedron.scene.position.z = 4;
 
+            this.controls.enabled = true;
+            this.loadFinished = true;
+
             return icosahedron.scene;
         });
+
+        this.controls.enabled = false;
+        let loadingPlane = buildLoadingScreen();
+        this.scene.add(loadingPlane);
+        loadingPlane.position.z = this.camera.position.z + 7;
 
         let ambientLight = new AmbientLight("#2c3e50", 1);
         this.scene.add(ambientLight);

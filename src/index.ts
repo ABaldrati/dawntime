@@ -39,6 +39,7 @@ const blendingShader = {
 
 const DEFAULT_LAYER = 0;
 const OCCLUSION_LAYER = 1;
+const LOADING_LAYER = 2;
 
 const loader = new GLTFLoader();
 const renderer = new WebGLRenderer();
@@ -52,7 +53,7 @@ document.body.appendChild(renderer.domElement);
 
 let scene: AbstractScene = SkullScene.getInstance();
 
-export {renderer, occlusionShader, blendingShader, loader, OCCLUSION_LAYER, DEFAULT_LAYER, updateShaderLightPosition};
+export {renderer, occlusionShader, blendingShader, loader, OCCLUSION_LAYER, DEFAULT_LAYER, LOADING_LAYER, updateShaderLightPosition};
 
 function onFrame() {
     requestAnimationFrame(onFrame);
