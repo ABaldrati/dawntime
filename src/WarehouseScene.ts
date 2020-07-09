@@ -1,4 +1,4 @@
-//import warehouseFile from "../models/warehouse/scene.gltf"; TODO
+import warehouseFile from "../models/warehouse/scene.gltf";
 import {
     AmbientLight,
     AxesHelper,
@@ -39,7 +39,7 @@ export class WarehouseScene extends AbstractScene {
     }
 
     public render() {
-        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms); //TODO check position
+        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
         this.controls.update();
 
         this.camera.layers.set(OCCLUSION_LAYER);
@@ -52,7 +52,7 @@ export class WarehouseScene extends AbstractScene {
     }
 
     protected buildScene() {
-        loader.load('warehouse/scene.gltf', skull => {
+        loader.load(warehouseFile, skull => {
             skull.scene.scale.set(5, 5, 5);
             skull.scene.traverse(o => {
                 if (o instanceof Mesh) {
