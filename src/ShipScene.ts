@@ -216,10 +216,10 @@ export class ShipScene extends AbstractScene {
         };
         let resetFolder = this.gui.addFolder("Scene management")
 
-        resetFolder.add({resetSliders}, 'resetSliders')
-        resetFolder.add({resetPosition}, 'resetPosition')
-        resetFolder.add({resetScene}, 'resetScene')
-        resetFolder.add(this, "animationEnabled")
+        resetFolder.add({resetSliders}, 'resetSliders').name("Reset sliders")
+        resetFolder.add({resetPosition}, 'resetPosition').name("Reset position")
+        resetFolder.add({resetScene}, 'resetScene').name("Reset scene")
+        resetFolder.add(this, "animationEnabled").name("Animation enabled")
         resetFolder.open()
     }
 }

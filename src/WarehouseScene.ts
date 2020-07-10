@@ -190,9 +190,9 @@ export class WarehouseScene extends AbstractScene {
             this.controls.update();
         };
         let resetFolder = this.gui.addFolder("Scene management")
-        resetFolder.add({resetSliders}, 'resetSliders')
-        resetFolder.add({resetPosition}, 'resetPosition')
-        resetFolder.add({resetScene}, 'resetScene')
+        resetFolder.add({resetSliders}, 'resetSliders').name("Reset sliders")
+        resetFolder.add({resetPosition}, 'resetPosition').name("Reset position")
+        resetFolder.add({resetScene}, 'resetScene').name("Reset scene")
 
         resetFolder.open()
     }
