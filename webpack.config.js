@@ -1,8 +1,10 @@
 const webpack = require('webpack');
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const devMode = process.env.NODE_ENV !== 'production'
+const devMode = false; //process.env.NODE_ENV !== 'production'
 
 const config = {
   entry: './src/index.ts',
@@ -68,6 +70,10 @@ const config = {
     ]
   },
   plugins: [
+    new HtmlWebpackPlugin({
+      template: "./web/index.html",
+    }),
+    new FaviconsWebpackPlugin('./web/logo_icon.png'),
     new MiniCssExtractPlugin(),
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
