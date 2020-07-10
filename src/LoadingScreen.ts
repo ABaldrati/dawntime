@@ -46,13 +46,11 @@ export class LoadingScreen {
             spinnerPlane.layers.set(LOADING_LAYER);
             loadingPlane.add(spinnerPlane);
             spinnerPlane.position.y = -0.5;
-            spinnerPlane.add(new AxesHelper(10));
             spinnerPlaneGeometry.center();
 
             return spinnerPlane;
         })
 
-        loadingPlane.add(new AxesHelper(10));
         loadingPlane.layers.set(LOADING_LAYER);
 
         this.loadingPlane = loadingPlane;
