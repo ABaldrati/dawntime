@@ -1,14 +1,15 @@
 import shipFile from "../models/sailing_ship/scene.gltf";
 import seaFile from "../models/sea_wave/scene.gltf";
+import backgroundFile from "../models/sailing_ship/background.png";
 import {
-    AmbientLight,
+    AmbientLight, AxesHelper, BackSide,
     Box3, Clock,
     Mesh,
     MeshBasicMaterial,
     Object3D,
     PerspectiveCamera,
     PointLight,
-    SphereBufferGeometry,
+    SphereBufferGeometry, TextureLoader,
     Vector3
 } from "three";
 import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
@@ -30,7 +31,7 @@ export class ShipScene extends AbstractScene {
     private loadFinished: boolean;
 
     private constructor() {
-        super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000))
+        super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.001, 2000))
         this.controls = new OrbitControls(this.camera, renderer.domElement)
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
@@ -119,6 +120,19 @@ export class ShipScene extends AbstractScene {
                 return sea.scene;
             });
 
+        let bgGeometry = new SphereBufferGeometry(2000, 150, 150);
+        let texture = new TextureLoader().loadAsync(backgroundFile);
+
+        texture.then(texture => {
+            const bgMaterial = new MeshBasicMaterial({
+                map: texture,
+                side: BackSide,
+            });
+            let backgroundSphere = new Mesh(bgGeometry, bgMaterial);
+            backgroundSphere.position.z = 35;
+            this.scene.add(backgroundSphere);
+        });
+
         this.controls.enabled = false;
         this.scene.add(this.loadingScreen.loadingPlane);
         this.loadingScreen.loadingPlane.position.z = 24;
@@ -142,6 +156,8 @@ export class ShipScene extends AbstractScene {
         this.pointLight.position.setX(-1.8);
 
         this.camera.position.z = 25;
+
+        this.shaderUniforms.exposure.value = 0.06;
 
         updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
     }
