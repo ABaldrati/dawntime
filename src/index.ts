@@ -75,11 +75,11 @@ function setUpSceneSelection() {
     gui.addFolder("Scene selection")
 
     let scenes: { [key: string]: () => AbstractScene } = {
-        "Skull": () => SkullScene.getInstance(),
-        "Warehouse": () => WarehouseScene.getInstance(),
-        "Icosahedron": () => IcosahedronScene.getInstance(),
-        "Ship": () => ShipScene.getInstance(),
-        "Satellite": () => SatelliteScene.getInstance()
+        "Skull": SkullScene.getInstance,
+        "Warehouse": WarehouseScene.getInstance,
+        "Icosahedron": IcosahedronScene.getInstance,
+        "Ship": ShipScene.getInstance,
+        "Satellite": SatelliteScene.getInstance
     }
 
     let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));
