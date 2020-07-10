@@ -34,6 +34,7 @@ export class IcosahedronScene extends AbstractScene {
         this.angle = 0;
         this.animationEnabled = true;
         this.loadFinished = false;
+        this.cameraInitialPosition = new Vector3(0, 0, 8)
         this.buildScene();
         this.buildGUI();
     }
@@ -118,7 +119,7 @@ export class IcosahedronScene extends AbstractScene {
         this.lightSphere.layers.set(OCCLUSION_LAYER)
         this.scene.add(this.lightSphere);
 
-        this.camera.position.z = 8;
+        this.camera.position.copy(this.cameraInitialPosition);
         this.controls.update();
 
         this.shaderUniforms.exposure.value = 0.08;
@@ -132,11 +133,22 @@ export class IcosahedronScene extends AbstractScene {
     protected buildGUI() {
         super.buildGUI();
 
+
         let lightPositionFolder = this.gui.addFolder("Light Position")
-        lightPositionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
-        lightPositionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);
-        lightPositionFolder.add(this.lightSphere.position, "z", -20, 20, 0.01);
-        lightPositionFolder.open()
+        let xController = lightPositionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
+        let yController = lightPositionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);
+        let zController = lightPositionFolder.add(this.lightSphere.position, "z", -20, 20, 0.01);
+        lightPositionFolder.open();
+
+        xController.onChange(x => {
+            this.pointLight.position.x = x;
+        })
+        yController.onChange(y => {
+            this.pointLight.position.y = y;
+        })
+        zController.onChange(z => {
+            this.pointLight.position.z = z;
+        })
 
         let scatteringFolder = this.gui.addFolder("Volumetric scattering parameters");
         Object.keys(this.shaderUniforms).forEach((k: string) => {
@@ -163,38 +175,14 @@ export class IcosahedronScene extends AbstractScene {
         })
         scatteringFolder.open();
 
-        let tempgui = new GUI(this.gui)
-        tempgui.domElement.style.display = "none";
 
-        let resetScene = async () => {
-            let icosahedronGroupScene = await this.icosahedronGroupScene;
+        this.initialGUI = new GUI(this.gui)
+        this.initialGUI.domElement.style.display = "none";
 
-            this.gui.revert(tempgui);
-            this.camera.position.set(0, 0, 8);
-            icosahedronGroupScene.position.set(0,0,4)
-            icosahedronGroupScene.rotation.x = 0;
-            icosahedronGroupScene.rotation.z = 0;
-            this.angle = 0;
-            this.controls.update();
-        };
-
-        let resetSliders = () => {
-            this.gui.revert(tempgui);
-        };
-
-        let resetPosition = async () => {
-            let icosahedronGroupScene = await this.icosahedronGroupScene
-            this.camera.position.set(0, 0, 8);
-            icosahedronGroupScene.position.set(0,0,4)
-            this.angle = 0;
-            icosahedronGroupScene.rotation.x = 0;
-            icosahedronGroupScene.rotation.z = 0;
-            this.controls.update();
-        };
         let resetFolder = this.gui.addFolder("Scene management")
-        resetFolder.add({resetSliders}, 'resetSliders').name("Reset sliders")
-        resetFolder.add({resetPosition}, 'resetPosition').name("Reset position")
-        resetFolder.add({resetScene}, 'resetScene').name("Reset scene")
+        resetFolder.add(this, 'resetSliders').name("Reset sliders")
+        resetFolder.add(this, 'resetPosition').name("Reset position")
+        resetFolder.add(this, 'resetScene').name("Reset scene")
         resetFolder.add(this, "animationEnabled").name("Animation enabled")
         resetFolder.open()
 
@@ -219,5 +207,16 @@ export class IcosahedronScene extends AbstractScene {
 
             this.angle += 0.009;
         }
+    }
+
+
+    protected async resetPosition() {
+        super.resetPosition();
+        let icosahedronGroupScene = await this.icosahedronGroupScene
+        icosahedronGroupScene.position.set(0,0,4)
+        this.angle = 0;
+        icosahedronGroupScene.rotation.x = 0;
+        icosahedronGroupScene.rotation.z = 0;
+        this.controls.update();
     }
 }

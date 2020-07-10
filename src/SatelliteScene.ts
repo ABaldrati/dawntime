@@ -7,7 +7,7 @@ import {
     MeshBasicMaterial,
     PerspectiveCamera,
     PointLight,
-    SphereBufferGeometry, TextureLoader
+    SphereBufferGeometry, TextureLoader, Vector3
 } from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
@@ -27,6 +27,7 @@ export class SatelliteScene extends AbstractScene {
         this.controls = new OrbitControls(this.camera, renderer.domElement);
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
+        this.cameraInitialPosition = new Vector3(-18.19, 3.22, 98.78)
         this.buildScene();
         this.buildGUI();
     }
@@ -59,11 +60,6 @@ export class SatelliteScene extends AbstractScene {
             //renderer.setClearColor("#015e78");
 
             this.sceneComposer.render();
-            console.log('polar')
-            console.log(this.controls.getPolarAngle());
-            console.log('azimuth')
-            console.log(this.controls.getAzimuthalAngle())
-            console.log(' ')
         } else {
             this.camera.layers.set(LOADING_LAYER);
             renderer.setClearColor("#000000");
@@ -85,7 +81,7 @@ export class SatelliteScene extends AbstractScene {
                     o.parent?.add(occlusionObject)
                 }
             })
-            satellite.scene.scale.set(0.01,0.01,0.01);
+            satellite.scene.scale.set(0.01, 0.01, 0.01);
             this.scene.add(satellite.scene);
             satellite.scene.position.z = 75;
             satellite.scene.position.y = 5;
@@ -131,7 +127,7 @@ export class SatelliteScene extends AbstractScene {
             this.controls.enabled = true;
         });
 
-       this.camera.position.set(-18.19, 3.22,98.78)
+        this.camera.position.copy(this.cameraInitialPosition)
         //this.controls.target.set(50, 50, -14)
 
         //this.controls.minAzimuthAngle = -0.25
@@ -148,10 +144,20 @@ export class SatelliteScene extends AbstractScene {
         super.buildGUI();
 
         let lightPositionFolder = this.gui.addFolder("Light Position")
-        lightPositionFolder.add(this.lightSphere.position, "x", -100, 100, 0.1);
-        lightPositionFolder.add(this.lightSphere.position, "y", -100, 100, 0.1);
-        lightPositionFolder.add(this.lightSphere.position, "z", -100, 100, 0.1);
+        let xController = lightPositionFolder.add(this.lightSphere.position, "x", -100, 100, 0.1);
+        let yController = lightPositionFolder.add(this.lightSphere.position, "y", -100, 100, 0.1);
+        let zController = lightPositionFolder.add(this.lightSphere.position, "z", -100, 100, 0.1);
         lightPositionFolder.open()
+
+        xController.onChange(x => {
+            this.pointLight.position.x = x;
+        })
+        yController.onChange(y => {
+            this.pointLight.position.y = y;
+        })
+        zController.onChange(z => {
+            this.pointLight.position.z = z;
+        })
 
         let scatteringFolder = this.gui.addFolder("Volumetric scattering parameters");
         Object.keys(this.shaderUniforms).forEach((k: string) => {
@@ -178,26 +184,14 @@ export class SatelliteScene extends AbstractScene {
         })
         scatteringFolder.open();
 
-        let tempgui = new GUI(this.gui)
-        tempgui.domElement.style.display = "none";
 
-        let resetScene = () => {
-            this.gui.revert(tempgui);
-            resetPosition();
-        };
+        this.initialGUI = new GUI(this.gui)
+        this.initialGUI.domElement.style.display = "none";
 
-        let resetSliders = () => {
-            this.gui.revert(tempgui);
-        };
-
-        let resetPosition = () => {
-            this.camera.position.set(-18.19, 3.22,98.78)
-            this.controls.update();
-        };
         let resetFolder = this.gui.addFolder("Scene management")
-        resetFolder.add({resetSliders}, 'resetSliders')
-        resetFolder.add({resetPosition}, 'resetPosition')
-        resetFolder.add({resetScene}, 'resetScene')
+        resetFolder.add(this, 'resetSliders').name("Reset sliders")
+        resetFolder.add(this, 'resetPosition').name("Reset position")
+        resetFolder.add(this, 'resetScene').name("Reset scene")
 
         resetFolder.open()
     }

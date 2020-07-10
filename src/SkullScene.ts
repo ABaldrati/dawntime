@@ -6,7 +6,7 @@ import {
     MeshBasicMaterial,
     PerspectiveCamera,
     PointLight,
-    SphereBufferGeometry
+    SphereBufferGeometry, Vector3
 } from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
@@ -24,6 +24,7 @@ export class SkullScene extends AbstractScene {
         this.controls = new OrbitControls(this.camera, renderer.domElement);
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
+        this.cameraInitialPosition = new Vector3(-0.04, -0.68, 6.97);
         this.buildScene();
         this.buildGUI();
     }
@@ -87,7 +88,8 @@ export class SkullScene extends AbstractScene {
         this.lightSphere.layers.set(OCCLUSION_LAYER)
         this.scene.add(this.lightSphere);
 
-        this.camera.position.set(-0.04, -0.68, 6.97)
+        this.camera.position.copy(this.cameraInitialPosition);
+
         this.controls.update();
     }
 
@@ -95,10 +97,20 @@ export class SkullScene extends AbstractScene {
         super.buildGUI();
 
         let lightPositionFolder = this.gui.addFolder("Light Position")
-        lightPositionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
-        lightPositionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);
-        lightPositionFolder.add(this.lightSphere.position, "z", -20, 20, 0.01);
+        let xController = lightPositionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
+        let yController = lightPositionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);
+        let zController = lightPositionFolder.add(this.lightSphere.position, "z", -20, 20, 0.01);
         lightPositionFolder.open()
+
+        xController.onChange(x => {
+            this.pointLight.position.x = x;
+        })
+        yController.onChange(y => {
+            this.pointLight.position.y = y;
+        })
+        zController.onChange(z => {
+            this.pointLight.position.z = z;
+        })
 
         let scatteringFolder = this.gui.addFolder("Volumetric scattering parameters");
         Object.keys(this.shaderUniforms).forEach((k: string) => {
@@ -125,27 +137,13 @@ export class SkullScene extends AbstractScene {
         })
         scatteringFolder.open();
 
-        let tempgui = new GUI(this.gui)
-        tempgui.domElement.style.display = "none";
+        this.initialGUI = new GUI(this.gui)
+        this.initialGUI.domElement.style.display = "none";
 
-        let resetScene = () => {
-            this.gui.revert(tempgui);
-            this.camera.position.set(-0.04, -0.68, 6.97)
-            this.controls.update();
-        };
-
-        let resetSliders = () => {
-            this.gui.revert(tempgui);
-        };
-
-        let resetPosition = () => {
-            this.camera.position.set(-0.04, -0.68, 6.97)
-            this.controls.update();
-        };
         let resetFolder = this.gui.addFolder("Scene management")
-        resetFolder.add({resetSliders}, 'resetSliders').name("Reset sliders")
-        resetFolder.add({resetPosition}, 'resetPosition').name("Reset position")
-        resetFolder.add({resetScene}, 'resetScene').name("Reset scene")
+        resetFolder.add(this, 'resetSliders').name("Reset sliders")
+        resetFolder.add(this, 'resetPosition').name("Reset position")
+        resetFolder.add(this, 'resetScene').name("Reset scene")
 
         resetFolder.open()
     }

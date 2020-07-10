@@ -26,6 +26,7 @@ export class WarehouseScene extends AbstractScene {
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
         this.loadFinished = false;
+        this.cameraInitialPosition = new Vector3(-14,0,-20)
         this.buildScene();
         this.buildGUI();
     }
@@ -47,8 +48,8 @@ export class WarehouseScene extends AbstractScene {
 
     public render() {
         if (this.loadFinished) {
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
             this.controls.update();
+            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
 
             this.camera.layers.set(OCCLUSION_LAYER);
             renderer.setClearColor("#111111")
@@ -85,8 +86,7 @@ export class WarehouseScene extends AbstractScene {
             this.controls.enabled = true;
             this.loadFinished = true;
             this.controls.target.set(5, 0, -14);
-            this.camera.position.z = -20;
-            this.camera.position.x = -14;
+            this.camera.position.copy(this.cameraInitialPosition)
         }, undefined, error => {
             console.error(error);
         });
@@ -102,6 +102,7 @@ export class WarehouseScene extends AbstractScene {
         this.lightSphere = new Mesh(geometry, material);
         this.lightSphere.layers.set(OCCLUSION_LAYER)
 
+
         this.controls.minAzimuthAngle = -Math.PI / 1.55;
         this.controls.maxAzimuthAngle = -Math.PI / 1.55 + Math.PI / 5.3;
         this.controls.minPolarAngle = Math.PI / 4 + Math.PI / 5;
@@ -110,6 +111,7 @@ export class WarehouseScene extends AbstractScene {
         this.controls.maxDistance = 22
 
         this.controls.update();
+
 
         this.shaderUniforms.exposure.value = 0.20;
 
@@ -134,15 +136,12 @@ export class WarehouseScene extends AbstractScene {
 
         xController.onChange(x => {
             this.pointLight.position.x = x;
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
         })
         yController.onChange(y => {
             this.pointLight.position.y = y;
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
         })
         zController.onChange(z => {
             this.pointLight.position.z = z;
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
         })
 
         let scatteringFolder = this.gui.addFolder("Volumetric scattering parameters");
@@ -170,29 +169,14 @@ export class WarehouseScene extends AbstractScene {
         })
         scatteringFolder.open();
 
-        let tempgui = new GUI(this.gui)
-        tempgui.domElement.style.display = "none";
+        this.initialGUI = new GUI(this.gui)
+        this.initialGUI.domElement.style.display = "none";
 
-        let resetScene = () => {
-            this.gui.revert(tempgui);
-            this.camera.position.z = -20;
-            this.camera.position.x = -14;
-            this.controls.update();
-        };
-
-        let resetSliders = () => {
-            this.gui.revert(tempgui);
-        };
-
-        let resetPosition = () => {
-            this.camera.position.z = -20;
-            this.camera.position.x = -14;
-            this.controls.update();
-        };
         let resetFolder = this.gui.addFolder("Scene management")
-        resetFolder.add({resetSliders}, 'resetSliders').name("Reset sliders")
-        resetFolder.add({resetPosition}, 'resetPosition').name("Reset position")
-        resetFolder.add({resetScene}, 'resetScene').name("Reset scene")
+        resetFolder.add(this, 'resetSliders').name("Reset sliders")
+        resetFolder.add(this, 'resetPosition').name("Reset position")
+        resetFolder.add(this, 'resetScene').name("Reset scene")
+        resetFolder.open()
 
         resetFolder.open()
     }

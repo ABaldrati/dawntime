@@ -38,6 +38,7 @@ export class ShipScene extends AbstractScene {
         this.sea = undefined as any as Promise<Object3D>;
         this.animationEnabled = true;
         this.loadFinished = false;
+        this.cameraInitialPosition = new Vector3(0, 0, 25)
         this.buildScene();
         this.buildGUI();
     }
@@ -157,11 +158,7 @@ export class ShipScene extends AbstractScene {
         this.lightSphere.position.setX(-1.8);
         this.pointLight.position.setX(-1.8);
 
-        this.camera.position.z = 20;
-        this.camera.position.x = 10;
-        this.camera.position.y = -4;
-
-        this.shaderUniforms.exposure.value = 0.06;
+        this.camera.position.copy(this.cameraInitialPosition)
 
         updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
     }
@@ -169,76 +166,54 @@ export class ShipScene extends AbstractScene {
     protected buildGUI() {
         super.buildGUI();
 
-        let positionFolder = this.gui.addFolder("Light Position")
-        let xController = positionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
-        let yController = positionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);
-        let zController = positionFolder.add(this.lightSphere.position, "z", -25, 25, 0.01);
-        positionFolder.open();
+        let lightPositionFolder = this.gui.addFolder("Light Position")
+        let xController = lightPositionFolder.add(this.lightSphere.position, "x", -10, 10, 0.01);
+        let yController = lightPositionFolder.add(this.lightSphere.position, "y", -10, 10, 0.01);
+        let zController = lightPositionFolder.add(this.lightSphere.position, "z", -25, 25, 0.01);
+        lightPositionFolder.open();
 
         xController.onChange(x => {
             this.pointLight.position.x = x;
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
         })
         yController.onChange(y => {
             this.pointLight.position.y = y;
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
         })
         zController.onChange(z => {
             this.pointLight.position.z = z;
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
         })
 
-        let volumetricFolder = this.gui.addFolder("Volumetric scattering parameters");
+        let scatteringFolder = this.gui.addFolder("Volumetric scattering parameters");
         Object.keys(this.shaderUniforms).forEach((k: string) => {
             if (k != "tDiffuse" && k != "lightPosition") {
                 let prop = this.shaderUniforms[k]
                 switch (k) {
                     case "weight":
-                        volumetricFolder.add(prop, "value", 0, 1, 0.01).name(k);
+                        scatteringFolder.add(prop, "value", 0, 1, 0.01).name(k);
                         break;
                     case "exposure":
-                        volumetricFolder.add(prop, "value", 0, 1, 0.01).name(k);
+                        scatteringFolder.add(prop, "value", 0, 1, 0.01).name(k);
                         break;
                     case "decay":
-                        volumetricFolder.add(prop, "value", 0.8, 1, 0.001).name(k);
+                        scatteringFolder.add(prop, "value", 0.8, 1, 0.001).name(k);
                         break;
                     case "density":
-                        volumetricFolder.add(prop, "value", 0, 1, 0.01).name(k);
+                        scatteringFolder.add(prop, "value", 0, 1, 0.01).name(k);
                         break;
                     case "samples":
-                        volumetricFolder.add(prop, "value", 0, 200, 1).name(k);
+                        scatteringFolder.add(prop, "value", 0, 200, 1).name(k);
                         break;
                 }
             }
         })
-        volumetricFolder.open();
+        scatteringFolder.open();
 
-        let tempgui = new GUI(this.gui)
-        tempgui.domElement.style.display = "none";
+        this.initialGUI = new GUI(this.gui)
+        this.initialGUI.domElement.style.display = "none";
 
-        let resetScene = () => {
-            this.gui.revert(tempgui);
-            this.camera.position.set(0, 0, 25);
-            this.sea.then(s => s.position.setY(-7));
-            this.angle = 0;
-            this.controls.update();
-        };
-
-        let resetSliders = () => {
-            this.gui.revert(tempgui);
-        };
-
-        let resetPosition = () => {
-            this.camera.position.set(0, 0, 25);
-            this.sea.then(s => s.position.setY(-7));
-            this.angle = 0;
-            this.controls.update();
-        };
         let resetFolder = this.gui.addFolder("Scene management")
-
-        resetFolder.add({resetSliders}, 'resetSliders').name("Reset sliders")
-        resetFolder.add({resetPosition}, 'resetPosition').name("Reset position")
-        resetFolder.add({resetScene}, 'resetScene').name("Reset scene")
+        resetFolder.add(this, 'resetSliders').name("Reset sliders")
+        resetFolder.add(this, 'resetPosition').name("Reset position")
+        resetFolder.add(this, 'resetScene').name("Reset scene")
         resetFolder.add(this, "animationEnabled").name("Animation enabled")
         resetFolder.open()
     }

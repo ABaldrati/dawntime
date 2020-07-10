@@ -1,4 +1,4 @@
-import {Camera, LinearFilter, PerspectiveCamera, RGBFormat, Scene, WebGLRenderTarget} from "three";
+import {Camera, LinearFilter, PerspectiveCamera, RGBFormat, Scene, Vector3, WebGLRenderTarget} from "three";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {blendingShader, occlusionShader, renderer} from "./index";
 import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
@@ -17,6 +17,8 @@ export abstract class AbstractScene {
     protected sceneComposer: EffectComposer;
     protected lightPassScale = 0.5;
     protected loadingScreen: LoadingScreen;
+    protected cameraInitialPosition = new Vector3();
+    protected initialGUI: GUI = undefined as any as GUI;
 
     protected constructor(protected camera: PerspectiveCamera) {
         this.scene = new Scene();
@@ -90,5 +92,18 @@ export abstract class AbstractScene {
         sceneComposer.addPass(blendingPass);
 
         return [occlusionComposer, sceneComposer]
+    }
+
+    protected resetScene(){
+        this.resetSliders()
+        this.resetPosition();
+    }
+
+    protected resetSliders(){
+        this.gui.revert(this.initialGUI);
+    }
+
+    protected resetPosition(){
+        this.camera.position.copy(this.cameraInitialPosition)
     }
 }
