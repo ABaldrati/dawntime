@@ -1,7 +1,7 @@
 import satelliteFile from "../models/satellite/scene.gltf";
 import bgFile from "../models/satellite/bg_sky.jpg"
 import {
-    AmbientLight,
+    AmbientLight, AxesHelper,
     BackSide, CineonToneMapping, Group, LinearToneMapping,
     Mesh,
     MeshBasicMaterial,
@@ -10,15 +10,17 @@ import {
     SphereBufferGeometry, TextureLoader
 } from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
+import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
+import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
 
 export class SatelliteScene extends AbstractScene {
     private static instance: SatelliteScene;
     private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
+    private loadFinished: boolean = false;
 
     private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000))
@@ -38,27 +40,41 @@ export class SatelliteScene extends AbstractScene {
         return SatelliteScene.instance;
     }
 
+    update(): void {
+        if (!this.loadFinished) {
+            this.loadingScreen.update();
+        }
+    }
+
     public render() {
-        this.controls.update();
-        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
+        if (this.loadFinished) {
+            this.controls.update();
+            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
 
-        this.camera.layers.set(OCCLUSION_LAYER);
-        renderer.setClearColor("#1a1a1a")
+            this.camera.layers.set(OCCLUSION_LAYER);
+            renderer.setClearColor("#1a1a1a")
 
-        this.occlusionComposer.render();
-        this.camera.layers.set(DEFAULT_LAYER);
-        //renderer.setClearColor("#015e78");
+            this.occlusionComposer.render();
+            this.camera.layers.set(DEFAULT_LAYER);
+            //renderer.setClearColor("#015e78");
 
-        this.sceneComposer.render();
-        console.log('polar')
-        console.log(this.controls.getPolarAngle());
-        console.log('azimuth')
-        console.log(this.controls.getAzimuthalAngle())
-        console.log(' ')
+            this.sceneComposer.render();
+            console.log('polar')
+            console.log(this.controls.getPolarAngle());
+            console.log('azimuth')
+            console.log(this.controls.getAzimuthalAngle())
+            console.log(' ')
+        } else {
+            this.camera.layers.set(LOADING_LAYER);
+            renderer.setClearColor("#000000");
+
+            this.sceneComposer.render();
+        }
     }
 
     protected buildScene() {
-        loader.load(satelliteFile, satellite => {
+        let satelliteModel = loader.loadAsync(satelliteFile);
+        satelliteModel.then((satellite: GLTF) => {
             satellite.scene.traverse(o => {
                 if (o instanceof Mesh) {
                     let material = new MeshBasicMaterial({color: "#010101"});
@@ -73,10 +89,16 @@ export class SatelliteScene extends AbstractScene {
             this.scene.add(satellite.scene);
             satellite.scene.position.z = 75;
             satellite.scene.position.y = 5;
-        }, undefined, error => {
-            console.error(error);
         });
 
+        satelliteModel.catch(console.error);
+
+        this.controls.enabled = false;
+        this.scene.add(this.loadingScreen.loadingPlane);
+        this.loadingScreen.loadingPlane.position.z = 98;
+        this.loadingScreen.loadingPlane.position.y = 3.3;
+        this.loadingScreen.loadingPlane.position.x = -18;
+        this.loadingScreen.loadingPlane.rotateY(-Math.PI / 20);
 
         let ambientLight = new AmbientLight("#2c3e50", 1);
         this.scene.add(ambientLight);
@@ -92,14 +114,22 @@ export class SatelliteScene extends AbstractScene {
 
 
         let bgGeometry = new SphereBufferGeometry(2000, 150, 150);
-        var texture = new TextureLoader().load( bgFile)
-        const bgMaterial = new MeshBasicMaterial({
-            map: texture,
-            side: BackSide,
+        let texture = new TextureLoader().loadAsync(bgFile);
 
+        texture.then(texture => {
+            const bgMaterial = new MeshBasicMaterial({
+                map: texture,
+                side: BackSide,
+
+            });
+            let backgroundSphere = new Mesh(bgGeometry, bgMaterial);
+            this.scene.add(backgroundSphere);
         });
-        let backgroundSphere = new Mesh(bgGeometry, bgMaterial);
-        this.scene.add(backgroundSphere)
+
+        Promise.all([satelliteModel, texture]).then(() => {
+            this.loadFinished = true;
+            this.controls.enabled = true;
+        });
 
        this.camera.position.set(-18.19, 3.22,98.78)
         //this.controls.target.set(50, 50, -14)
