@@ -14,6 +14,7 @@ export abstract class AbstractScene {
     protected shaderUniforms: any = {}
     protected occlusionComposer: EffectComposer;
     protected sceneComposer: EffectComposer;
+    protected lightPassScale = 0.5;
 
     protected constructor(protected camera: PerspectiveCamera) {
         this.scene = new Scene();
@@ -22,7 +23,8 @@ export abstract class AbstractScene {
 
     public abstract render(): void;
 
-    public update(): void {}
+    public update(): void {
+    }
 
     public destroyGUI() {
         this.gui.destroy();
@@ -31,7 +33,7 @@ export abstract class AbstractScene {
     public updateSize(width: number, height: number) {
         this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
-        this.occlusionComposer.setSize(width * 0.5, height * 0.5);
+        this.occlusionComposer.setSize(width * this.lightPassScale, height * this.lightPassScale);
         this.sceneComposer.setSize(width, height)
     }
 
@@ -39,6 +41,14 @@ export abstract class AbstractScene {
 
     protected buildGUI() {
         this.gui = new GUI();
+        let lightPassFolder = this.gui.addFolder("Light Pass Render Image");
+        let lightPassSlider = lightPassFolder.add(this, "lightPassScale", 0, 1, 0.01).name("Light pass scale")
+        lightPassFolder.open();
+
+        lightPassSlider.onChange(() => {
+            this.occlusionComposer.setSize(window.innerWidth * this.lightPassScale, window.innerHeight * this.lightPassScale);
+        })
+
     }
 
     protected composeEffects() {
@@ -48,7 +58,7 @@ export abstract class AbstractScene {
             format: RGBFormat,
             stencilBuffer: false
         };
-        let occlusionRenderTarget = new WebGLRenderTarget(window.innerWidth / 2, window.innerHeight / 2, renderTargetParameters)
+        let occlusionRenderTarget = new WebGLRenderTarget(window.innerWidth * this.lightPassScale, window.innerHeight * this.lightPassScale, renderTargetParameters)
 
         let occlusionComposer = new EffectComposer(renderer, occlusionRenderTarget);
         occlusionComposer.addPass(new RenderPass(this.scene, this.camera));
