@@ -2,19 +2,20 @@ import shipFile from "../models/sailing_ship/scene.gltf";
 import seaFile from "../models/sea_wave/scene.gltf";
 import backgroundFile from "../models/sailing_ship/background.png";
 import {
-    AmbientLight, AxesHelper, BackSide,
-    Box3, Clock,
+    AmbientLight,
+    BackSide,
+    Box3,
     Mesh,
     MeshBasicMaterial,
     Object3D,
     PerspectiveCamera,
     PointLight,
-    SphereBufferGeometry, TextureLoader,
+    SphereBufferGeometry,
+    TextureLoader,
     Vector3
 } from "three";
-import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
+import {DEFAULT_LAYER, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
 import {GUI} from "dat.gui";
 import {loadModel} from "./utils";
@@ -22,7 +23,6 @@ import {loadModel} from "./utils";
 export class ShipScene extends AbstractScene {
     private static instance: ShipScene;
 
-    private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
     private animationEnabled = true;
@@ -32,13 +32,12 @@ export class ShipScene extends AbstractScene {
 
     private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.001, 2000))
-        this.controls = new OrbitControls(this.camera, renderer.domElement)
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
         this.sea = undefined as any as Promise<Object3D>;
         this.animationEnabled = true;
         this.loadFinished = false;
-        this.cameraInitialPosition = new Vector3(10,-4,20)
+        this.cameraInitialPosition = new Vector3(10, -4, 20)
         this.buildScene();
         this.buildGUI();
     }
@@ -48,6 +47,7 @@ export class ShipScene extends AbstractScene {
             ShipScene.instance = new ShipScene();
         } else {
             ShipScene.instance.buildGUI();
+            ShipScene.instance.resetScene()
         }
 
         return ShipScene.instance;

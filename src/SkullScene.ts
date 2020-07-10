@@ -1,27 +1,25 @@
 import skullFile from "../models/skull/scene.gltf";
 import {
     AmbientLight,
-    AxesHelper, Group,
+    AxesHelper,
     Mesh,
     MeshBasicMaterial,
     PerspectiveCamera,
     PointLight,
-    SphereBufferGeometry, Vector3
+    SphereBufferGeometry,
+    Vector3
 } from "three";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
 
 export class SkullScene extends AbstractScene {
     private static instance: SkullScene;
-    private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
 
     private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 35))
-        this.controls = new OrbitControls(this.camera, renderer.domElement);
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
         this.cameraInitialPosition = new Vector3(-0.04, -0.68, 6.97);
@@ -34,6 +32,7 @@ export class SkullScene extends AbstractScene {
             SkullScene.instance = new SkullScene();
         } else {
             SkullScene.instance.buildGUI();
+            SkullScene.instance.resetScene();
         }
         return SkullScene.instance;
     }

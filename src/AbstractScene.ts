@@ -1,4 +1,4 @@
-import {Camera, LinearFilter, PerspectiveCamera, RGBFormat, Scene, Vector3, WebGLRenderTarget} from "three";
+import {LinearFilter, PerspectiveCamera, RGBFormat, Scene, Vector3, WebGLRenderTarget} from "three";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {blendingShader, occlusionShader, renderer} from "./index";
 import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
@@ -8,6 +8,7 @@ import {VerticalBlurShader} from "three/examples/jsm/shaders/VerticalBlurShader"
 import {CopyShader} from "three/examples/jsm/shaders/CopyShader";
 import {GUI} from "dat.gui";
 import {LoadingScreen} from "./LoadingScreen";
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 
 export abstract class AbstractScene {
     protected scene: Scene;
@@ -19,9 +20,11 @@ export abstract class AbstractScene {
     protected loadingScreen: LoadingScreen;
     protected cameraInitialPosition = new Vector3();
     protected initialGUI: GUI = undefined as any as GUI;
+    protected controls: OrbitControls;
 
     protected constructor(protected camera: PerspectiveCamera) {
         this.scene = new Scene();
+        this.controls = new OrbitControls(this.camera, renderer.domElement);
         [this.occlusionComposer, this.sceneComposer] = this.composeEffects();
         this.loadingScreen = new LoadingScreen();
     }
@@ -94,16 +97,17 @@ export abstract class AbstractScene {
         return [occlusionComposer, sceneComposer]
     }
 
-    protected resetScene(){
+    protected resetScene() {
         this.resetSliders()
         this.resetPosition();
     }
 
-    protected resetSliders(){
+    protected resetSliders() {
         this.gui.revert(this.initialGUI);
     }
 
-    protected resetPosition(){
+    protected resetPosition() {
         this.camera.position.copy(this.cameraInitialPosition)
+        this.controls.update();
     }
 }

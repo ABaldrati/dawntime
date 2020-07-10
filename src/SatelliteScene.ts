@@ -1,15 +1,16 @@
 import satelliteFile from "../models/satellite/scene.gltf";
 import bgFile from "../models/satellite/bg_sky.jpg"
 import {
-    AmbientLight, AxesHelper,
-    BackSide, CineonToneMapping, Group, LinearToneMapping,
+    AmbientLight,
+    BackSide,
     Mesh,
     MeshBasicMaterial,
     PerspectiveCamera,
     PointLight,
-    SphereBufferGeometry, TextureLoader, Vector3
+    SphereBufferGeometry,
+    TextureLoader,
+    Vector3
 } from "three";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
@@ -17,14 +18,12 @@ import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
 
 export class SatelliteScene extends AbstractScene {
     private static instance: SatelliteScene;
-    private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
     private loadFinished: boolean = false;
 
     private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000))
-        this.controls = new OrbitControls(this.camera, renderer.domElement);
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
         this.cameraInitialPosition = new Vector3(-18.19, 3.22, 98.78)
@@ -37,6 +36,7 @@ export class SatelliteScene extends AbstractScene {
             SatelliteScene.instance = new SatelliteScene();
         } else {
             SatelliteScene.instance.buildGUI();
+            SatelliteScene.instance.resetScene()
         }
         return SatelliteScene.instance;
     }

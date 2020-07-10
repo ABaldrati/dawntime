@@ -1,22 +1,22 @@
 import icosahedronFile from "../models/icosahedron/scene.gltf";
 import {
     AmbientLight,
-    AxesHelper, DoubleSide, FontLoader, Group,
+    Group,
     Mesh,
-    MeshBasicMaterial, MeshPhysicalMaterial, Object3D, OrthographicCamera,
-    PerspectiveCamera, Plane, PlaneGeometry,
-    PointLight, Scene,
-    SphereBufferGeometry, TextGeometry, Vector3, WebGLRenderTarget
+    MeshBasicMaterial,
+    MeshPhysicalMaterial,
+    PerspectiveCamera,
+    PointLight,
+    SphereBufferGeometry,
+    Vector3
 } from "three";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
+import {DEFAULT_LAYER, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
 import {loadModel} from "./utils";
 
 export class IcosahedronScene extends AbstractScene {
     private static instance: IcosahedronScene;
-    private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
     private icosahedronGroupScene: Promise<Group>;
@@ -27,7 +27,6 @@ export class IcosahedronScene extends AbstractScene {
 
     private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 35))
-        this.controls = new OrbitControls(this.camera, renderer.domElement);
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
         this.icosahedronGroupScene = undefined as any as Promise<Group>;
@@ -42,9 +41,9 @@ export class IcosahedronScene extends AbstractScene {
     static getInstance(): IcosahedronScene {
         if (!IcosahedronScene.instance) {
             IcosahedronScene.instance = new IcosahedronScene();
-        }
-        else {
+        } else {
             IcosahedronScene.instance.buildGUI();
+            IcosahedronScene.instance.resetScene();
         }
         return IcosahedronScene.instance;
     }
@@ -82,8 +81,7 @@ export class IcosahedronScene extends AbstractScene {
                     if (firstObject) {
                         firstObject = false;
                         o.material = firstIcosahedronMaterial;
-                    }
-                    else{
+                    } else {
                         o.material = secondIcosahedronMaterial;
                     }
                     console.log(o.material);
@@ -213,7 +211,7 @@ export class IcosahedronScene extends AbstractScene {
     protected async resetPosition() {
         super.resetPosition();
         let icosahedronGroupScene = await this.icosahedronGroupScene
-        icosahedronGroupScene.position.set(0,0,4)
+        icosahedronGroupScene.position.set(0, 0, 4)
         this.angle = 0;
         icosahedronGroupScene.rotation.x = 0;
         icosahedronGroupScene.rotation.z = 0;

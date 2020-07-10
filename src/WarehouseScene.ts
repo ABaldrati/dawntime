@@ -8,25 +8,22 @@ import {
     SphereBufferGeometry,
     Vector3
 } from "three";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
 
 export class WarehouseScene extends AbstractScene {
     private static instance: WarehouseScene;
-    private controls: OrbitControls;
     private pointLight: PointLight;
     private lightSphere: Mesh;
     private loadFinished: boolean;
 
     private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200))
-        this.controls = new OrbitControls(this.camera, renderer.domElement);
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
         this.loadFinished = false;
-        this.cameraInitialPosition = new Vector3(-14,0,-20)
+        this.cameraInitialPosition = new Vector3(-14, 0, -20)
         this.buildScene();
         this.buildGUI();
     }
@@ -36,6 +33,7 @@ export class WarehouseScene extends AbstractScene {
             WarehouseScene.instance = new WarehouseScene();
         } else {
             WarehouseScene.instance.buildGUI();
+            WarehouseScene.instance.resetScene();
         }
         return WarehouseScene.instance;
     }
