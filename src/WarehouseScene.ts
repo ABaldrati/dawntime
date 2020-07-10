@@ -12,7 +12,6 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
-import {buildLoadingScreen} from "./utils";
 
 export class WarehouseScene extends AbstractScene {
     private static instance: WarehouseScene;
@@ -38,6 +37,12 @@ export class WarehouseScene extends AbstractScene {
             WarehouseScene.instance.buildGUI();
         }
         return WarehouseScene.instance;
+    }
+
+    update(): void {
+        if (!this.loadFinished) {
+            this.loadingScreen.update();
+        }
     }
 
     public render() {
@@ -109,12 +114,11 @@ export class WarehouseScene extends AbstractScene {
         this.shaderUniforms.exposure.value = 0.20;
 
         this.controls.enabled = false;
-        let loadingScreen = buildLoadingScreen();
-        this.scene.add(loadingScreen);
-        loadingScreen.quaternion.copy(this.camera.quaternion);
-        loadingScreen.position.x = -7;
-        loadingScreen.position.z = 1;
-        loadingScreen.position.y = 1.1;
+        this.scene.add(this.loadingScreen.loadingPlane);
+        this.loadingScreen.loadingPlane.quaternion.copy(this.camera.quaternion);
+        this.loadingScreen.loadingPlane.position.x = -7;
+        this.loadingScreen.loadingPlane.position.z = 1;
+        this.loadingScreen.loadingPlane.position.y = 1.1;
     }
 
     protected buildGUI() {

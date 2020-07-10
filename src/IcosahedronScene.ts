@@ -12,7 +12,7 @@ import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
-import {buildLoadingScreen, loadModel} from "./utils";
+import {loadModel} from "./utils";
 
 export class IcosahedronScene extends AbstractScene {
     private static instance: IcosahedronScene;
@@ -103,9 +103,8 @@ export class IcosahedronScene extends AbstractScene {
         });
 
         this.controls.enabled = false;
-        let loadingPlane = buildLoadingScreen();
-        this.scene.add(loadingPlane);
-        loadingPlane.position.z = this.camera.position.z + 7;
+        this.scene.add(this.loadingScreen.loadingPlane);
+        this.loadingScreen.loadingPlane.position.z = this.camera.position.z + 7;
 
         let ambientLight = new AmbientLight("#2c3e50", 1);
         this.scene.add(ambientLight);
@@ -202,19 +201,23 @@ export class IcosahedronScene extends AbstractScene {
     }
 
     public update() {
-        if (!this.animationEnabled) {
-            return super.update();
+        if (!this.loadFinished) {
+            this.loadingScreen.update();
+        } else {
+            if (!this.animationEnabled) {
+                return super.update();
+            }
+            var radius = 4,
+                xpos = Math.sin(this.angle) * radius,
+                zpos = Math.cos(this.angle) * radius;
+
+            this.icosahedronGroupScene.then(icosahedronGroupScene => {
+                icosahedronGroupScene.position.set(xpos, 0, zpos)
+                icosahedronGroupScene.rotation.x += 0.01;
+                icosahedronGroupScene.rotation.z += 0.005;
+            });
+
+            this.angle += 0.009;
         }
-        var radius = 4,
-            xpos = Math.sin(this.angle) * radius,
-            zpos = Math.cos(this.angle) * radius;
-
-        this.icosahedronGroupScene.then(icosahedronGroupScene => {
-            icosahedronGroupScene.position.set(xpos, 0, zpos)
-            icosahedronGroupScene.rotation.x += 0.01;
-            icosahedronGroupScene.rotation.z += 0.005;
-        });
-
-        this.angle += 0.009;
     }
 }

@@ -8,3 +8,4 @@ declare module "*.bin";
 declare module "*.jpg";
 declare module "*.png";
 declare module "*.typeface.json";
+declare module "*.png";

@@ -7,6 +7,7 @@ import {HorizontalBlurShader} from "three/examples/jsm/shaders/HorizontalBlurSha
 import {VerticalBlurShader} from "three/examples/jsm/shaders/VerticalBlurShader";
 import {CopyShader} from "three/examples/jsm/shaders/CopyShader";
 import {GUI} from "dat.gui";
+import {LoadingScreen} from "./LoadingScreen";
 
 export abstract class AbstractScene {
     protected scene: Scene;
@@ -15,10 +16,12 @@ export abstract class AbstractScene {
     protected occlusionComposer: EffectComposer;
     protected sceneComposer: EffectComposer;
     protected lightPassScale = 0.5;
+    protected loadingScreen: LoadingScreen;
 
     protected constructor(protected camera: PerspectiveCamera) {
         this.scene = new Scene();
-        [this.occlusionComposer, this.sceneComposer] = this.composeEffects()
+        [this.occlusionComposer, this.sceneComposer] = this.composeEffects();
+        this.loadingScreen = new LoadingScreen();
     }
 
     public abstract render(): void;

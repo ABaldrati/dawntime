@@ -16,7 +16,7 @@ import {AbstractScene} from "./AbstractScene";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
 import {GUI} from "dat.gui";
-import {buildLoadingScreen, loadModel} from "./utils";
+import {loadModel} from "./utils";
 
 export class ShipScene extends AbstractScene {
     private static instance: ShipScene;
@@ -72,12 +72,17 @@ export class ShipScene extends AbstractScene {
     }
 
     update(): void {
-        if (!this.animationEnabled) {
-            return super.update();
+        if (!this.loadFinished) {
+            this.loadingScreen.update();
+        } else {
+            if (!this.animationEnabled) {
+                return super.update();
+            }
+
+            const y = Math.sin(this.angle);
+            this.sea.then(s => s.position.setY(-7 + y));
+            this.angle += 0.01;
         }
-        const y = Math.sin(this.angle);
-        this.sea.then(s => s.position.setY(-7 + y));
-        this.angle += 0.01;
     }
 
     protected buildScene() {
@@ -115,9 +120,8 @@ export class ShipScene extends AbstractScene {
             });
 
         this.controls.enabled = false;
-        let loadingScreen = buildLoadingScreen();
-        this.scene.add(loadingScreen);
-        loadingScreen.position.z = 24;
+        this.scene.add(this.loadingScreen.loadingPlane);
+        this.loadingScreen.loadingPlane.position.z = 24;
 
         let ambientLight = new AmbientLight("#4a5289", 1.2);
         this.scene.add(ambientLight);
