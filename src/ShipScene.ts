@@ -135,7 +135,9 @@ export class ShipScene extends AbstractScene {
 
         this.controls.enabled = false;
         this.scene.add(this.loadingScreen.loadingPlane);
-        this.loadingScreen.loadingPlane.position.z = 24;
+        this.loadingScreen.loadingPlane.position.z = 19;
+        this.loadingScreen.loadingPlane.position.x = 10;
+        this.loadingScreen.loadingPlane.position.y = -4;
 
         let ambientLight = new AmbientLight("#4a5289", 1.2);
         this.scene.add(ambientLight);
@@ -155,7 +157,9 @@ export class ShipScene extends AbstractScene {
         this.lightSphere.position.setX(-1.8);
         this.pointLight.position.setX(-1.8);
 
-        this.camera.position.z = 25;
+        this.camera.position.z = 20;
+        this.camera.position.x = 10;
+        this.camera.position.y = -4;
 
         this.shaderUniforms.exposure.value = 0.06;
 
