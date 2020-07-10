@@ -38,7 +38,7 @@ export class ShipScene extends AbstractScene {
         this.sea = undefined as any as Promise<Object3D>;
         this.animationEnabled = true;
         this.loadFinished = false;
-        this.cameraInitialPosition = new Vector3(0, 0, 25)
+        this.cameraInitialPosition = new Vector3(10,-4,20)
         this.buildScene();
         this.buildGUI();
     }
