@@ -10,6 +10,7 @@ import {
 } from "three";
 import {LOADING_LAYER} from "./index";
 import spinnerImage from "../images/circle-notch-solid.png";
+import logoImage from "../images/logo.png";
 import optimerRegular from "three/examples/fonts/optimer_regular.typeface.json";
 
 export class LoadingScreen {
@@ -23,7 +24,7 @@ export class LoadingScreen {
         let loadingPlaneMaterial = new MeshBasicMaterial({color: "hsl(0,0%,0%)", side: DoubleSide});
         let loadingPlane = new Mesh(loadingPlaneGeometry, loadingPlaneMaterial);
 
-        new FontLoader().load(optimerRegular, font => {
+        let textPromise = new FontLoader().loadAsync(optimerRegular).then(font => {
             let textGeometry = new TextGeometry('Loading...', {
                 font,
                 size: 0.1,
@@ -34,7 +35,10 @@ export class LoadingScreen {
             textMesh.layers.set(LOADING_LAYER);
             loadingPlane.add(textMesh);
             textMesh.geometry.center();
-        }, undefined, console.log);
+
+            return textMesh;
+        });
+        textPromise.catch(console.error);
 
         this.spinner = new TextureLoader().loadAsync(spinnerImage).then(texture => {
             let spinnerPlaneGeometry = new PlaneGeometry(0.1, 0.1);
@@ -49,6 +53,18 @@ export class LoadingScreen {
             spinnerPlaneGeometry.center();
 
             return spinnerPlane;
+        })
+
+        textPromise.then(textMesh => {
+            new TextureLoader().load(logoImage, logoTexture => {
+                let logoPlaneGeometry = new PlaneGeometry(1.07, 0.21);
+                let logoPlaneMaterial = new MeshBasicMaterial({map: logoTexture, transparent: true});
+                let logoPlane = new Mesh(logoPlaneGeometry, logoPlaneMaterial);
+                logoPlane.layers.set(LOADING_LAYER);
+                loadingPlane.add(logoPlane);
+                logoPlane.position.copy(textMesh.position);
+                logoPlane.position.y += 0.3;
+            }, undefined, console.error);
         })
 
         loadingPlane.layers.set(LOADING_LAYER);
