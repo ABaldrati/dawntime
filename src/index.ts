@@ -83,13 +83,13 @@ function setUpSceneSelection() {
     }
 
     let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));
+    sceneSelector.setValue("Skull");
     sceneSelector.onChange((selectedScene: string) => {
         let oldScene = scene;
         oldScene.destroyGUI();
         scene = scenes[selectedScene]();
         scene.updateSize(window.innerWidth, window.innerHeight);
     })
-    sceneSelector.setValue("Skull");
 }
 
 window.addEventListener("resize", _ => {

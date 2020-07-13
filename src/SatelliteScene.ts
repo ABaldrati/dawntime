@@ -28,7 +28,6 @@ export class SatelliteScene extends AbstractScene {
         this.lightSphere = undefined as any as Mesh;
         this.cameraInitialPosition = new Vector3(-18.19, 3.22, 98.78)
         this.buildScene();
-        this.buildGUI();
     }
 
     static getInstance(): SatelliteScene {
@@ -126,6 +125,7 @@ export class SatelliteScene extends AbstractScene {
         Promise.all([satelliteModel, texture]).then(() => {
             this.loadFinished = true;
             this.controls.enabled = true;
+            this.buildGUI();
         });
 
         this.camera.position.copy(this.cameraInitialPosition)

@@ -39,7 +39,6 @@ export class ShipScene extends AbstractScene {
         this.loadFinished = false;
         this.cameraInitialPosition = new Vector3(10, -4, 20)
         this.buildScene();
-        this.buildGUI();
     }
 
     static getInstance(): ShipScene {
@@ -114,6 +113,7 @@ export class ShipScene extends AbstractScene {
 
                 this.controls.enabled = true;
                 this.loadFinished = true;
+                this.buildGUI();
 
                 this.controls.minDistance = 10;
                 this.controls.maxDistance = 40;

@@ -35,7 +35,6 @@ export class IcosahedronScene extends AbstractScene {
         this.loadFinished = false;
         this.cameraInitialPosition = new Vector3(0, 0, 8)
         this.buildScene();
-        this.buildGUI();
     }
 
     static getInstance(): IcosahedronScene {
@@ -84,7 +83,6 @@ export class IcosahedronScene extends AbstractScene {
                     } else {
                         o.material = secondIcosahedronMaterial;
                     }
-                    console.log(o.material);
                     let occlusionObject = new Mesh(o.geometry, occlusionMaterial)
 
                     occlusionObject.layers.set(OCCLUSION_LAYER)
@@ -97,7 +95,7 @@ export class IcosahedronScene extends AbstractScene {
 
             this.controls.enabled = true;
             this.loadFinished = true;
-
+            this.buildGUI();
             return icosahedron.scene;
         });
 

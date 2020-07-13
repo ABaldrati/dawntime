@@ -25,7 +25,6 @@ export class WarehouseScene extends AbstractScene {
         this.loadFinished = false;
         this.cameraInitialPosition = new Vector3(-14, 0, -20)
         this.buildScene();
-        this.buildGUI();
     }
 
     static getInstance(): WarehouseScene {
@@ -83,6 +82,7 @@ export class WarehouseScene extends AbstractScene {
 
             this.controls.enabled = true;
             this.loadFinished = true;
+            this.buildGUI();
             this.controls.target.set(5, 0, -14);
             this.camera.position.copy(this.cameraInitialPosition)
         }, undefined, error => {
