@@ -83,7 +83,7 @@ export class LoadingScreen {
     }
 
     update(): void {
-        this.angle += 0.01;
+        this.angle += 0.002;
         this.spinner.then(s => s.rotateZ(this.angle));
     }
 }
