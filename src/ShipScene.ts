@@ -139,6 +139,7 @@ export class ShipScene extends AbstractScene {
         this.loadingScreen.loadingPlane.position.z = 19;
         this.loadingScreen.loadingPlane.position.x = 10;
         this.loadingScreen.loadingPlane.position.y = -4;
+        this.loadingScreen.loadingPlane.rotation.setFromVector3(new Vector3(0, 0, 0))
 
         let ambientLight = new AmbientLight("#4a5289", 1.2);
         this.scene.add(ambientLight);

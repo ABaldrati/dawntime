@@ -94,6 +94,7 @@ export class SatelliteScene extends AbstractScene {
         this.loadingScreen.loadingPlane.position.z = 98;
         this.loadingScreen.loadingPlane.position.y = 3.3;
         this.loadingScreen.loadingPlane.position.x = -18;
+        this.loadingScreen.loadingPlane.rotation.setFromVector3(new Vector3(0, 0, 0))
         this.loadingScreen.loadingPlane.rotateY(-Math.PI / 20);
 
         let ambientLight = new AmbientLight("#2c3e50", 1);

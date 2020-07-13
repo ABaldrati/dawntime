@@ -14,11 +14,21 @@ import logoImage from "../images/logo.png";
 import optimerRegular from "three/examples/fonts/optimer_regular.typeface.json";
 
 export class LoadingScreen {
+    private static instance?: LoadingScreen = undefined;
+
     public readonly loadingPlane: Mesh;
     private spinner: Promise<Mesh>;
     private angle: number = 0;
 
-    constructor() {
+    public static getInstance(): LoadingScreen {
+        if (!LoadingScreen.instance) {
+            LoadingScreen.instance = new LoadingScreen();
+        }
+
+        return LoadingScreen.instance;
+    }
+
+    private constructor() {
         let loadingPlaneGeometry = new PlaneGeometry(10, 10);
 
         let loadingPlaneMaterial = new MeshBasicMaterial({color: "hsl(0,0%,0%)", side: DoubleSide});

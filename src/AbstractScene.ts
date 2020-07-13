@@ -26,7 +26,7 @@ export abstract class AbstractScene {
         this.scene = new Scene();
         this.controls = new OrbitControls(this.camera, renderer.domElement);
         [this.occlusionComposer, this.sceneComposer] = this.composeEffects();
-        this.loadingScreen = new LoadingScreen();
+        this.loadingScreen = LoadingScreen.getInstance();
     }
 
     public abstract render(): void;

@@ -103,7 +103,9 @@ export class IcosahedronScene extends AbstractScene {
 
         this.controls.enabled = false;
         this.scene.add(this.loadingScreen.loadingPlane);
+        this.loadingScreen.loadingPlane.position.set(0, 0, 0)
         this.loadingScreen.loadingPlane.position.z = this.camera.position.z + 7;
+        this.loadingScreen.loadingPlane.rotation.setFromVector3(new Vector3(0, 0, 0))
 
         let ambientLight = new AmbientLight("#2c3e50", 1);
         this.scene.add(ambientLight);
