@@ -9,7 +9,7 @@ import {
     SphereBufferGeometry,
     Vector3
 } from "three";
-import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
+import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
 
@@ -17,14 +17,14 @@ export class SkullScene extends AbstractScene {
     private static instance: SkullScene;
     private pointLight: PointLight;
     private lightSphere: Mesh;
+    private loadFinished: boolean = false;
 
     private constructor() {
-        super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 35))
+        super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 350))
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
         this.cameraInitialPosition = new Vector3(-0.04, -0.68, 6.97);
         this.buildScene();
-        this.buildGUI();
     }
 
     static getInstance(): SkullScene {
@@ -38,18 +38,25 @@ export class SkullScene extends AbstractScene {
     }
 
     public render() {
-        this.controls.update();
-        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
+        if (this.loadFinished) {
+            this.controls.update();
+            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
 
-        this.camera.layers.set(OCCLUSION_LAYER);
-        renderer.setClearColor("#111111")
+            this.camera.layers.set(OCCLUSION_LAYER);
+            renderer.setClearColor("#111111")
 
-        this.occlusionComposer.render();
-        this.camera.layers.set(DEFAULT_LAYER);
-        renderer.setClearColor("#015e78");
+            this.occlusionComposer.render();
+            this.camera.layers.set(DEFAULT_LAYER);
+            renderer.setClearColor("#015e78");
 
-        this.sceneComposer.render();
-        //console.log(this.camera.position)
+            this.sceneComposer.render();
+            //console.log(this.camera.position)
+        } else {
+            this.camera.layers.set(LOADING_LAYER);
+            renderer.setClearColor("#000000");
+
+            this.sceneComposer.render();
+        }
     }
 
     protected buildScene() {
@@ -69,6 +76,10 @@ export class SkullScene extends AbstractScene {
 
             this.scene.add(skull.scene);
             skull.scene.position.z = 3;
+
+            this.loadFinished = true;
+            this.controls.enabled = true;
+            this.buildGUI();
         }, undefined, error => {
             console.error(error);
         });
@@ -88,6 +99,13 @@ export class SkullScene extends AbstractScene {
         this.scene.add(this.lightSphere);
 
         this.camera.position.copy(this.cameraInitialPosition);
+
+        this.controls.enabled = false;
+        this.scene.add(this.loadingScreen.loadingPlane);
+        this.loadingScreen.loadingPlane.position.copy(this.cameraInitialPosition);
+        this.loadingScreen.loadingPlane.position.z = 6;
+        this.loadingScreen.loadingPlane.rotation.setFromVector3(new Vector3(0, 0, 0))
+        this.loadingScreen.loadingPlane.rotateX(Math.PI / 20);
 
         this.controls.update();
     }
