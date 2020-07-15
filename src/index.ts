@@ -57,10 +57,20 @@ renderer.domElement.style.left = "0";
 document.body.appendChild(renderer.domElement);
 
 // Preload loading scene for UX reasons
-LoadingScene.getInstance();
+let loadingPromise = LoadingScene.getInstance();
+while (loadingPromise.isFulfilled()) {}
 let scene: Promise<AbstractScene> = SkullScene.getInstance();
 
-export {renderer, occlusionShader, blendingShader, loader, OCCLUSION_LAYER, DEFAULT_LAYER, LOADING_LAYER, updateShaderLightPosition};
+export {
+    renderer,
+    occlusionShader,
+    blendingShader,
+    loader,
+    OCCLUSION_LAYER,
+    DEFAULT_LAYER,
+    LOADING_LAYER,
+    updateShaderLightPosition
+};
 
 async function onFrame() {
     requestAnimationFrame(onFrame);
