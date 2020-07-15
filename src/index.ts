@@ -56,6 +56,11 @@ renderer.domElement.style.top = "0";
 renderer.domElement.style.left = "0";
 document.body.appendChild(renderer.domElement);
 
+// Preload warehouse scene for UX reasons
+let warehousePromise = WarehouseScene.getInstance();
+warehousePromise.then(warehouse => {
+    warehouse.destroyGUI()
+})
 let scene: Promise<AbstractScene> = SkullScene.getInstance();
 
 export {renderer, occlusionShader, blendingShader, loader, OCCLUSION_LAYER, DEFAULT_LAYER, LOADING_LAYER, updateShaderLightPosition};
@@ -88,10 +93,10 @@ function setUpSceneSelection() {
 
     let scenes: { [key: string]: () => Promise<AbstractScene> } = {
         "Skull": SkullScene.getInstance,
-        "Warehouse": WarehouseScene.getInstance,
         "Icosahedron": IcosahedronScene.getInstance,
         "Ship": ShipScene.getInstance,
-        "Satellite": SatelliteScene.getInstance
+        "Satellite": SatelliteScene.getInstance,
+        "Warehouse": WarehouseScene.getInstance
     }
 
     let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));
