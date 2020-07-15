@@ -9,7 +9,7 @@ const devMode = false; //process.env.NODE_ENV !== 'production'
 const config = {
   entry: './src/index.ts',
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, process.env.WEBPACK_PUBLIC_PATH || 'dist'),
     filename: 'bundle.js'
   },
   module: {
