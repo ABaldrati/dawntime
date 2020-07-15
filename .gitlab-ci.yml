@@ -8,6 +8,6 @@ pages:
   - WEBPACK_PUBLIC_PATH="public" npm run build-prod
   artifacts:
     paths:
-    - dist
+    - public
   only:
   - master
