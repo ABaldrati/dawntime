@@ -17,84 +17,60 @@ import {GUI} from "dat.gui";
 import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
 
 export class SatelliteScene extends AbstractScene {
-    private static instance: SatelliteScene;
+    private static instance: Promise<SatelliteScene>;
     private pointLight: PointLight;
     private lightSphere: Mesh;
-    private loadFinished: boolean = false;
 
     private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000))
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
         this.cameraInitialPosition = new Vector3(-18.19, 3.22, 98.78)
-        this.buildScene();
     }
 
-    static getInstance(): SatelliteScene {
+    static async getInstance(): Promise<SatelliteScene> {
         if (!SatelliteScene.instance) {
-            SatelliteScene.instance = new SatelliteScene();
+            let s = new SatelliteScene();
+            SatelliteScene.instance = s.buildScene();
         } else {
-            SatelliteScene.instance.buildGUI();
-            SatelliteScene.instance.resetScene()
+            let s = await SatelliteScene.instance;
+            s.buildGUI();
+            s.resetScene()
         }
+
         return SatelliteScene.instance;
     }
 
-    update(): void {
-        if (!this.loadFinished) {
-            this.loadingScreen.update();
-        }
-    }
-
     public render() {
-        if (this.loadFinished) {
-            this.controls.update();
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
+        this.controls.update();
+        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
 
-            this.camera.layers.set(OCCLUSION_LAYER);
-            renderer.setClearColor("#1a1a1a")
+        this.camera.layers.set(OCCLUSION_LAYER);
+        renderer.setClearColor("#1a1a1a")
 
-            this.occlusionComposer.render();
-            this.camera.layers.set(DEFAULT_LAYER);
-            //renderer.setClearColor("#015e78");
+        this.occlusionComposer.render();
+        this.camera.layers.set(DEFAULT_LAYER);
+        //renderer.setClearColor("#015e78");
 
-            this.sceneComposer.render();
-        } else {
-            this.camera.layers.set(LOADING_LAYER);
-            renderer.setClearColor("#000000");
-
-            this.sceneComposer.render();
-        }
+        this.sceneComposer.render();
     }
 
-    protected buildScene() {
-        let satelliteModel = loader.loadAsync(satelliteFile);
-        satelliteModel.then((satellite: GLTF) => {
-            satellite.scene.traverse(o => {
-                if (o instanceof Mesh) {
-                    let material = new MeshBasicMaterial({color: "#010101"});
-                    let occlusionObject = new Mesh(o.geometry, material)
+    protected async buildScene(): Promise<SatelliteScene> {
+        let satellite: GLTF = await loader.loadAsync(satelliteFile);
+        satellite.scene.traverse(o => {
+            if (o instanceof Mesh) {
+                let material = new MeshBasicMaterial({color: "#010101"});
+                let occlusionObject = new Mesh(o.geometry, material)
 
 
-                    occlusionObject.layers.set(OCCLUSION_LAYER)
-                    o.parent?.add(occlusionObject)
-                }
-            })
+                occlusionObject.layers.set(OCCLUSION_LAYER)
+                o.parent?.add(occlusionObject)
+            }
             satellite.scene.scale.set(0.01, 0.01, 0.01);
             this.scene.add(satellite.scene);
             satellite.scene.position.z = 75;
             satellite.scene.position.y = 5;
         });
-
-        satelliteModel.catch(console.error);
-
-        this.controls.enabled = false;
-        this.scene.add(this.loadingScreen.loadingPlane);
-        this.loadingScreen.loadingPlane.position.z = 98;
-        this.loadingScreen.loadingPlane.position.y = 3.3;
-        this.loadingScreen.loadingPlane.position.x = -18;
-        this.loadingScreen.loadingPlane.rotation.setFromVector3(new Vector3(0, 0, 0))
-        this.loadingScreen.loadingPlane.rotateY(-Math.PI / 20);
 
         let ambientLight = new AmbientLight("#2c3e50", 1);
         this.scene.add(ambientLight);
@@ -108,25 +84,18 @@ export class SatelliteScene extends AbstractScene {
         this.lightSphere.layers.set(OCCLUSION_LAYER)
         this.scene.add(this.lightSphere);
 
-
         let bgGeometry = new SphereBufferGeometry(2000, 150, 150);
-        let texture = new TextureLoader().loadAsync(bgFile);
+        let texture = await new TextureLoader().loadAsync(bgFile);
 
-        texture.then(texture => {
-            const bgMaterial = new MeshBasicMaterial({
-                map: texture,
-                side: BackSide,
-
-            });
-            let backgroundSphere = new Mesh(bgGeometry, bgMaterial);
-            this.scene.add(backgroundSphere);
+        const bgMaterial = new MeshBasicMaterial({
+            map: texture,
+            side: BackSide,
         });
 
-        Promise.all([satelliteModel, texture]).then(() => {
-            this.loadFinished = true;
-            this.controls.enabled = true;
-            this.buildGUI();
-        });
+        let backgroundSphere = new Mesh(bgGeometry, bgMaterial);
+        this.scene.add(backgroundSphere);
+
+        this.buildGUI();
 
         this.camera.position.copy(this.cameraInitialPosition)
         //this.controls.target.set(50, 50, -14)
@@ -139,6 +108,8 @@ export class SatelliteScene extends AbstractScene {
         this.controls.maxDistance = 300
 
         this.controls.update();
+
+        return Promise.resolve(this);
     }
 
     protected buildGUI() {

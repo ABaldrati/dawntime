@@ -7,7 +7,6 @@ import {HorizontalBlurShader} from "three/examples/jsm/shaders/HorizontalBlurSha
 import {VerticalBlurShader} from "three/examples/jsm/shaders/VerticalBlurShader";
 import {CopyShader} from "three/examples/jsm/shaders/CopyShader";
 import {GUI} from "dat.gui";
-import {LoadingScreen} from "./LoadingScreen";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 
 export abstract class AbstractScene {
@@ -17,7 +16,6 @@ export abstract class AbstractScene {
     protected occlusionComposer: EffectComposer;
     protected sceneComposer: EffectComposer;
     protected lightPassScale = 0.5;
-    protected loadingScreen: LoadingScreen;
     protected cameraInitialPosition = new Vector3();
     protected initialGUI: GUI = undefined as any as GUI;
     protected controls: OrbitControls;
@@ -26,7 +24,6 @@ export abstract class AbstractScene {
         this.scene = new Scene();
         this.controls = new OrbitControls(this.camera, renderer.domElement);
         [this.occlusionComposer, this.sceneComposer] = this.composeEffects();
-        this.loadingScreen = LoadingScreen.getInstance();
     }
 
     public abstract render(): void;
@@ -45,7 +42,7 @@ export abstract class AbstractScene {
         this.sceneComposer.setSize(width, height)
     }
 
-    protected abstract buildScene(): void;
+    protected async abstract buildScene(): Promise<AbstractScene>;
 
     protected buildGUI() {
         this.gui = new GUI();

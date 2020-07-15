@@ -16,94 +16,77 @@ import {GUI} from "dat.gui";
 import {loadModel} from "./utils";
 
 export class IcosahedronScene extends AbstractScene {
-    private static instance: IcosahedronScene;
+    private static instance: Promise<IcosahedronScene>;
     private pointLight: PointLight;
     private lightSphere: Mesh;
-    private icosahedronGroupScene: Promise<Group>;
+    private icosahedronGroupScene: Group;
     private angle: number;
     private animationEnabled: boolean;
-    private loadFinished: boolean;
 
 
     private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 35))
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
-        this.icosahedronGroupScene = undefined as any as Promise<Group>;
+        this.icosahedronGroupScene = undefined as any as Group;
         this.angle = 0;
         this.animationEnabled = true;
-        this.loadFinished = false;
         this.cameraInitialPosition = new Vector3(0, 0, 8)
-        this.buildScene();
     }
 
-    static getInstance(): IcosahedronScene {
+    static async getInstance(): Promise<IcosahedronScene> {
         if (!IcosahedronScene.instance) {
-            IcosahedronScene.instance = new IcosahedronScene();
+            let s = new IcosahedronScene();
+            IcosahedronScene.instance = s.buildScene();
         } else {
-            IcosahedronScene.instance.buildGUI();
-            IcosahedronScene.instance.resetScene();
+            let s = await IcosahedronScene.instance;
+            s.buildGUI();
+            s.resetScene()
         }
+
         return IcosahedronScene.instance;
     }
 
+
     public render() {
-        if (this.loadFinished) {
-            this.controls.update();
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
+        this.controls.update();
+        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
 
-            this.camera.layers.set(OCCLUSION_LAYER);
-            renderer.setClearColor("#080808")
+        this.camera.layers.set(OCCLUSION_LAYER);
+        renderer.setClearColor("#080808")
 
-            this.occlusionComposer.render();
-            this.camera.layers.set(DEFAULT_LAYER);
-            renderer.setClearColor("#000000");
+        this.occlusionComposer.render();
+        this.camera.layers.set(DEFAULT_LAYER);
+        renderer.setClearColor("#000000");
 
-            this.sceneComposer.render();
-        } else {
-            this.camera.layers.set(LOADING_LAYER);
-            renderer.setClearColor("#000000");
+        this.sceneComposer.render();
 
-            this.sceneComposer.render();
-        }
     }
 
-    protected buildScene() {
+    protected async buildScene(): Promise<IcosahedronScene> {
         let firstObject = true;
         let occlusionMaterial = new MeshBasicMaterial({color: "#000000"});
         let firstIcosahedronMaterial = new MeshPhysicalMaterial({color: "#ff0000"});
         let secondIcosahedronMaterial = new MeshPhysicalMaterial({color: "#0f45ec"});
 
-        this.icosahedronGroupScene = loadModel(icosahedronFile).then(icosahedron => {
-            icosahedron.scene.traverse(o => {
-                if (o instanceof Mesh) {
-                    if (firstObject) {
-                        firstObject = false;
-                        o.material = firstIcosahedronMaterial;
-                    } else {
-                        o.material = secondIcosahedronMaterial;
-                    }
-                    let occlusionObject = new Mesh(o.geometry, occlusionMaterial)
-
-                    occlusionObject.layers.set(OCCLUSION_LAYER)
-                    o.parent?.add(occlusionObject)
+        this.icosahedronGroupScene = (await loadModel(icosahedronFile)).scene
+        this.icosahedronGroupScene.traverse(o => {
+            if (o instanceof Mesh) {
+                if (firstObject) {
+                    firstObject = false;
+                    o.material = firstIcosahedronMaterial;
+                } else {
+                    o.material = secondIcosahedronMaterial;
                 }
-            })
+                let occlusionObject = new Mesh(o.geometry, occlusionMaterial)
 
-            this.scene.add(icosahedron.scene);
-            icosahedron.scene.position.z = 4;
+                occlusionObject.layers.set(OCCLUSION_LAYER)
+                o.parent?.add(occlusionObject)
+            }
+        })
 
-            this.controls.enabled = true;
-            this.loadFinished = true;
-            this.buildGUI();
-            return icosahedron.scene;
-        });
-
-        this.controls.enabled = false;
-        this.scene.add(this.loadingScreen.loadingPlane);
-        this.loadingScreen.loadingPlane.position.set(0, 0, 0)
-        this.loadingScreen.loadingPlane.position.z = this.camera.position.z + 7;
-        this.loadingScreen.loadingPlane.rotation.setFromVector3(new Vector3(0, 0, 0))
+        this.scene.add(this.icosahedronGroupScene);
+        this.icosahedronGroupScene.position.z = 4;
 
         let ambientLight = new AmbientLight("#2c3e50", 1);
         this.scene.add(ambientLight);
@@ -126,6 +109,9 @@ export class IcosahedronScene extends AbstractScene {
         this.shaderUniforms.weight.value = 0.6;
         this.shaderUniforms.samples.value = 140;
 
+        this.buildGUI();
+
+        return Promise.resolve(this)
     }
 
     protected buildGUI() {
@@ -187,24 +173,19 @@ export class IcosahedronScene extends AbstractScene {
     }
 
     public update() {
-        if (!this.loadFinished) {
-            this.loadingScreen.update();
-        } else {
-            if (!this.animationEnabled) {
-                return super.update();
-            }
-            var radius = 4,
-                xpos = Math.sin(this.angle) * radius,
-                zpos = Math.cos(this.angle) * radius;
-
-            this.icosahedronGroupScene.then(icosahedronGroupScene => {
-                icosahedronGroupScene.position.set(xpos, 0, zpos)
-                icosahedronGroupScene.rotation.x += 0.01;
-                icosahedronGroupScene.rotation.z += 0.005;
-            });
-
-            this.angle += 0.009;
+        if (!this.animationEnabled) {
+            return super.update();
         }
+        var radius = 4,
+            xpos = Math.sin(this.angle) * radius,
+            zpos = Math.cos(this.angle) * radius;
+
+        this.icosahedronGroupScene.position.set(xpos, 0, zpos)
+        this.icosahedronGroupScene.rotation.x += 0.01;
+        this.icosahedronGroupScene.rotation.z += 0.005;
+
+        this.angle += 0.009;
+
     }
 
 

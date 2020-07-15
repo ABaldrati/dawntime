@@ -10,8 +10,9 @@ import {SkullScene} from "./SkullScene";
 import {AbstractScene} from "./AbstractScene";
 import {WarehouseScene} from "./WarehouseScene";
 import {IcosahedronScene} from "./IcosahedronScene";
-import { ShipScene } from './ShipScene';
+import {ShipScene} from "./ShipScene";
 import {SatelliteScene} from "./SatelliteScene";
+import {LoadingScene} from "./LoadingScene";
 
 const occlusionShader = {
     uniforms: {
@@ -52,14 +53,17 @@ renderer.domElement.style.top = "0";
 renderer.domElement.style.left = "0";
 document.body.appendChild(renderer.domElement);
 
-let scene: AbstractScene = SkullScene.getInstance();
+let scene: Promise<AbstractScene> = SkullScene.getInstance();
 
 export {renderer, occlusionShader, blendingShader, loader, OCCLUSION_LAYER, DEFAULT_LAYER, LOADING_LAYER, updateShaderLightPosition};
 
-function onFrame() {
+async function onFrame() {
     requestAnimationFrame(onFrame);
-    scene.update();
-    scene.render();
+
+    let scenePromise = Promise.race([scene, LoadingScene.getInstance()]);
+    let s = await scenePromise;
+    s.update();
+    s.render();
 }
 
 function updateShaderLightPosition(lightSphere: Mesh, camera: Camera, shaderUniforms: any) {
@@ -74,7 +78,7 @@ function setUpSceneSelection() {
     gui.domElement.style.float = "left";
     gui.addFolder("Scene selection")
 
-    let scenes: { [key: string]: () => AbstractScene } = {
+    let scenes: { [key: string]: () => Promise<AbstractScene> } = {
         "Skull": SkullScene.getInstance,
         "Warehouse": WarehouseScene.getInstance,
         "Icosahedron": IcosahedronScene.getInstance,
@@ -84,16 +88,19 @@ function setUpSceneSelection() {
 
     let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));
     sceneSelector.setValue("Skull");
-    sceneSelector.onChange((selectedScene: string) => {
-        let oldScene = scene;
+    sceneSelector.onChange(async (selectedScene: string) => {
+        sceneSelector.domElement.children.item(0)!!.setAttribute("disabled", "");
+        let oldScene = await scene;
         oldScene.destroyGUI();
         scene = scenes[selectedScene]();
-        scene.updateSize(window.innerWidth, window.innerHeight);
+        (await scene).updateSize(window.innerWidth, window.innerHeight);
+        sceneSelector.domElement.children.item(0)!!.removeAttribute("disabled")
     })
 }
 
-window.addEventListener("resize", _ => {
-    scene.updateSize(window.innerWidth, window.innerHeight);
+window.addEventListener("resize", async _ => {
+    let s = await scene
+    s.updateSize(window.innerWidth, window.innerHeight);
     renderer.setSize(window.innerWidth, window.innerHeight);
 })
 

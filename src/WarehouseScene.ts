@@ -11,40 +11,35 @@ import {
 import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
+import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
 
 export class WarehouseScene extends AbstractScene {
-    private static instance: WarehouseScene;
+    private static instance: Promise<WarehouseScene>;
     private pointLight: PointLight;
     private lightSphere: Mesh;
-    private loadFinished: boolean;
 
     private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200))
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
-        this.loadFinished = false;
         this.cameraInitialPosition = new Vector3(-14, 0, -20)
-        this.buildScene();
     }
 
-    static getInstance(): WarehouseScene {
+    static async getInstance(): Promise<WarehouseScene> {
         if (!WarehouseScene.instance) {
-            WarehouseScene.instance = new WarehouseScene();
+            let s = new WarehouseScene();
+            WarehouseScene.instance = s.buildScene();
         } else {
-            WarehouseScene.instance.buildGUI();
-            WarehouseScene.instance.resetScene();
+            let s = await WarehouseScene.instance;
+            s.buildGUI();
+            s.resetScene()
         }
+
         return WarehouseScene.instance;
     }
 
-    update(): void {
-        if (!this.loadFinished) {
-            this.loadingScreen.update();
-        }
-    }
 
     public render() {
-        if (this.loadFinished) {
             this.controls.update();
             updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
 
@@ -55,70 +50,55 @@ export class WarehouseScene extends AbstractScene {
             this.camera.layers.set(DEFAULT_LAYER);
             renderer.setClearColor("#030509");
             this.sceneComposer.render();
-
-        } else {
-            this.camera.layers.set(LOADING_LAYER);
-            renderer.setClearColor("#000000");
-
-            this.sceneComposer.render();
-        }
     }
 
-    protected buildScene() {
-        loader.load(warehouseFile, warehouse => {
-            warehouse.scene.scale.set(5, 5, 5);
-            warehouse.scene.traverse(o => {
-                if (o instanceof Mesh) {
-                    let material = new MeshBasicMaterial({color: "#000000"});
-                    let occlusionObject = new Mesh(o.geometry, material)
-
-                    occlusionObject.layers.set(OCCLUSION_LAYER)
-                    o.parent?.add(occlusionObject)
-                }
-            })
-
-            this.scene.add(warehouse.scene);
-            warehouse.scene.position.z = -7;
-
-            this.controls.enabled = true;
-            this.loadFinished = true;
-            this.buildGUI();
-            this.controls.target.set(5, 0, -14);
-            this.camera.position.copy(this.cameraInitialPosition)
-        }, undefined, error => {
-            console.error(error);
-        });
-
+    protected async buildScene(): Promise<WarehouseScene> {
         let ambientLight = new AmbientLight("#2c3e50", 4);
+
         this.scene.add(ambientLight);
-
         this.pointLight = new PointLight("#ffffff");
-        this.scene.add(this.pointLight);
 
+        this.scene.add(this.pointLight);
         let geometry = new SphereBufferGeometry(0.5, 32, 32);
+
         let material = new MeshBasicMaterial({color: 0xffffff});
         this.lightSphere = new Mesh(geometry, material);
         this.lightSphere.layers.set(OCCLUSION_LAYER)
-
-
         this.controls.minAzimuthAngle = -Math.PI / 1.55;
+
         this.controls.maxAzimuthAngle = -Math.PI / 1.55 + Math.PI / 5.3;
         this.controls.minPolarAngle = Math.PI / 4 + Math.PI / 5;
         this.controls.maxPolarAngle = Math.PI / 3 + Math.PI / 5;
         this.controls.minDistance = 8;
         this.controls.maxDistance = 22
-
         this.controls.update();
-
 
         this.shaderUniforms.exposure.value = 0.20;
 
-        this.controls.enabled = false;
-        this.scene.add(this.loadingScreen.loadingPlane);
-        this.loadingScreen.loadingPlane.quaternion.copy(this.camera.quaternion);
-        this.loadingScreen.loadingPlane.position.x = -7;
-        this.loadingScreen.loadingPlane.position.z = 1;
-        this.loadingScreen.loadingPlane.position.y = 1.1;
+        let warehousePromise = loader.loadAsync(warehouseFile);
+        warehousePromise.catch(console.log);
+
+        let warehouse: GLTF = await warehousePromise;
+        warehouse.scene.scale.set(5, 5, 5);
+        warehouse.scene.traverse(o => {
+            if (o instanceof Mesh) {
+                let material = new MeshBasicMaterial({color: "#000000"});
+                let occlusionObject = new Mesh(o.geometry, material)
+
+                occlusionObject.layers.set(OCCLUSION_LAYER)
+                o.parent?.add(occlusionObject)
+            }
+        })
+
+        this.scene.add(warehouse.scene);
+        warehouse.scene.position.z = -7;
+
+        this.buildGUI();
+        this.controls.target.set(5, 0, -14);
+        this.camera.position.copy(this.cameraInitialPosition)
+
+
+        return Promise.resolve(this);
     }
 
     protected buildGUI() {

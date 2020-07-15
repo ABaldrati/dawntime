@@ -14,117 +14,71 @@ import {
     TextureLoader,
     Vector3
 } from "three";
-import {DEFAULT_LAYER, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
+import {DEFAULT_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
-import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
 import {GUI} from "dat.gui";
 import {loadModel} from "./utils";
 
 export class ShipScene extends AbstractScene {
-    private static instance: ShipScene;
+    private static instance: Promise<ShipScene>;
 
     private pointLight: PointLight;
     private lightSphere: Mesh;
     private animationEnabled = true;
     private angle: number = 0;
-    private sea: Promise<Object3D>;
-    private loadFinished: boolean;
+    private sea: Object3D;
 
     private constructor() {
         super(new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.001, 2000))
         this.pointLight = undefined as any as PointLight;
         this.lightSphere = undefined as any as Mesh;
-        this.sea = undefined as any as Promise<Object3D>;
+        this.sea = undefined as any as Object3D;
         this.animationEnabled = true;
-        this.loadFinished = false;
         this.cameraInitialPosition = new Vector3(10, -4, 20)
-        this.buildScene();
     }
 
-    static getInstance(): ShipScene {
+    static async getInstance(): Promise<ShipScene> {
         if (!ShipScene.instance) {
-            ShipScene.instance = new ShipScene();
+            let s = new ShipScene();
+            ShipScene.instance = s.buildScene();
         } else {
-            ShipScene.instance.buildGUI();
-            ShipScene.instance.resetScene()
+            let s = await ShipScene.instance;
+            s.buildGUI();
+            s.resetScene()
         }
 
         return ShipScene.instance;
     }
 
     public render() {
-        if (this.loadFinished) {
-            this.controls.update();
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
+        this.controls.update();
+        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
 
-            this.camera.layers.set(OCCLUSION_LAYER);
-            renderer.setClearColor("hsl(200,33%,7%)")
+        this.camera.layers.set(OCCLUSION_LAYER);
+        renderer.setClearColor("hsl(200,33%,7%)")
 
-            this.occlusionComposer.render();
-            this.camera.layers.set(DEFAULT_LAYER);
+        this.occlusionComposer.render();
+        this.camera.layers.set(DEFAULT_LAYER);
 
-            this.sceneComposer.render();
-        } else {
-            this.camera.layers.set(LOADING_LAYER);
-            renderer.setClearColor("#000000");
-
-            this.sceneComposer.render();
-        }
+        this.sceneComposer.render();
     }
 
     update(): void {
-        if (!this.loadFinished) {
-            this.loadingScreen.update();
-        } else {
-            if (!this.animationEnabled) {
-                return super.update();
-            }
-
-            const y = Math.sin(this.angle);
-            this.sea.then(s => s.position.setY(-7 + y));
-            this.angle += 0.01;
+        if (!this.animationEnabled) {
+            return super.update();
         }
+
+        const y = Math.sin(this.angle);
+        this.sea.position.setY(-7 + y)
+        this.angle += 0.01;
     }
 
-    protected buildScene() {
-        this.sea = Promise.all([loadModel(shipFile), loadModel(seaFile)])
-            .then(([ship, sea]: [GLTF, GLTF]) => {
-                ship.scene.traverse(o => {
-                    if (o instanceof Mesh) {
-                        let material = new MeshBasicMaterial({color: "hsl(20,100%,3%)"});
-                        let occlusionObject = new Mesh(o.geometry, material)
-
-                        occlusionObject.layers.set(OCCLUSION_LAYER)
-                        o.parent?.add(occlusionObject)
-                        o.geometry.center()
-                    }
-                })
-
-                this.scene.add(sea.scene);
-                const box = new Box3().setFromObject(ship.scene);
-
-                const center = box.getCenter(new Vector3());
-                ship.scene.translateOnAxis(ship.scene.position.clone().sub(center), 2)
-
-                ship.scene.position.set(-12, -14, 12)
-
-                sea.scene.add(ship.scene);
-                sea.scene.position.setY(-7);
-
-                this.controls.enabled = true;
-                this.loadFinished = true;
-                this.buildGUI();
-
-                this.controls.minDistance = 10;
-                this.controls.maxDistance = 40;
-
-                return sea.scene;
-            });
-
+    protected async buildScene(): Promise<ShipScene> {
         let bgGeometry = new SphereBufferGeometry(2000, 150, 150);
-        let texture = new TextureLoader().loadAsync(backgroundFile);
 
+        let texture = new TextureLoader().loadAsync(backgroundFile);
         texture.then(texture => {
+
             const bgMaterial = new MeshBasicMaterial({
                 map: texture,
                 side: BackSide,
@@ -133,35 +87,58 @@ export class ShipScene extends AbstractScene {
             backgroundSphere.position.z = 35;
             this.scene.add(backgroundSphere);
         });
-
-        this.controls.enabled = false;
-        this.scene.add(this.loadingScreen.loadingPlane);
-        this.loadingScreen.loadingPlane.position.z = 19;
-        this.loadingScreen.loadingPlane.position.x = 10;
-        this.loadingScreen.loadingPlane.position.y = -4;
-        this.loadingScreen.loadingPlane.rotation.setFromVector3(new Vector3(0, 0, 0))
-
         let ambientLight = new AmbientLight("#4a5289", 1.2);
+
         this.scene.add(ambientLight);
-
         this.pointLight = new PointLight("hsl(17,94%,14%)");
-        this.scene.add(this.pointLight);
 
+        this.scene.add(this.pointLight);
         let geometry = new SphereBufferGeometry(4, 32, 32);
+
         let material = new MeshBasicMaterial({color: "hsl(38,100%,20%)"});
         this.lightSphere = new Mesh(geometry, material);
         this.lightSphere.layers.set(OCCLUSION_LAYER)
         this.scene.add(this.lightSphere);
-
         this.lightSphere.position.setZ(-22);
+
         this.pointLight.position.setZ(-22);
-
         this.lightSphere.position.setX(-1.8);
-        this.pointLight.position.setX(-1.8);
 
+        this.pointLight.position.setX(-1.8);
         this.camera.position.copy(this.cameraInitialPosition)
 
-        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
+        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms);
+
+        let ship = await loadModel(shipFile);
+        this.sea = (await loadModel(seaFile)).scene
+        ship.scene.traverse(o => {
+            if (o instanceof Mesh) {
+                let material = new MeshBasicMaterial({color: "hsl(20,100%,3%)"});
+                let occlusionObject = new Mesh(o.geometry, material)
+
+                occlusionObject.layers.set(OCCLUSION_LAYER)
+                o.parent?.add(occlusionObject)
+                o.geometry.center()
+            }
+        })
+
+        this.scene.add(this.sea);
+        const box = new Box3().setFromObject(ship.scene);
+
+        const center = box.getCenter(new Vector3());
+        ship.scene.translateOnAxis(ship.scene.position.clone().sub(center), 2)
+
+        ship.scene.position.set(-12, -14, 12)
+
+        this.sea.add(ship.scene);
+        this.sea.position.setY(-7);
+
+        this.buildGUI();
+
+        this.controls.minDistance = 10;
+        this.controls.maxDistance = 40;
+
+        return Promise.resolve(this);
     }
 
     protected buildGUI() {
