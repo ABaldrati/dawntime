@@ -1,8 +1,9 @@
-image: alpine:latest
+image: node:current-alpine
 
 pages:
   stage: deploy
   script:
+  - npm install
   - npm run build-prod
   artifacts:
     paths:
