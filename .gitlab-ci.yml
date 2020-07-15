@@ -5,7 +5,7 @@ pages:
   script:
   - apk add npm nodejs python3
   - npm install
-  - npm run build-prod
+  - WEBPACK_PUBLIC_PATH="public" npm run build-prod
   artifacts:
     paths:
     - dist
