@@ -1,8 +1,9 @@
-image: node:current-alpine
+image: alpine:latest
 
 pages:
   stage: deploy
   script:
+  - apk add npm nodejs python3
   - npm install
   - npm run build-prod
   artifacts:
