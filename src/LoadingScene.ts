@@ -112,7 +112,6 @@ export class LoadingScene extends AbstractScene {
 
     update(): void {
         this.angle = (0.1 * Date.now() / 10**Math.floor(Math.log10(Date.now()))) % (2 * Math.PI);
-        console.log(this.angle);
         this.spinner.rotateZ(this.angle);
     }
 

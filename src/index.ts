@@ -13,6 +13,9 @@ import {IcosahedronScene} from "./IcosahedronScene";
 import {ShipScene} from "./ShipScene";
 import {SatelliteScene} from "./SatelliteScene";
 import {LoadingScene} from "./LoadingScene";
+import Bluebird from "bluebird";
+
+global.Promise = <any>Bluebird
 
 const occlusionShader = {
     uniforms: {
@@ -60,8 +63,13 @@ export {renderer, occlusionShader, blendingShader, loader, OCCLUSION_LAYER, DEFA
 async function onFrame() {
     requestAnimationFrame(onFrame);
 
-    let scenePromise = Promise.race([scene, LoadingScene.getInstance()]);
-    let s = await scenePromise;
+    let s;
+    if (scene.isFulfilled()) {
+        s = await scene;
+    } else {
+        s = await LoadingScene.getInstance();
+    }
+
     s.update();
     s.render();
 }
