@@ -56,11 +56,8 @@ renderer.domElement.style.top = "0";
 renderer.domElement.style.left = "0";
 document.body.appendChild(renderer.domElement);
 
-// Preload warehouse scene for UX reasons
-let warehousePromise = WarehouseScene.getInstance();
-warehousePromise.then(warehouse => {
-    warehouse.destroyGUI()
-})
+// Preload loading scene for UX reasons
+LoadingScene.getInstance();
 let scene: Promise<AbstractScene> = SkullScene.getInstance();
 
 export {renderer, occlusionShader, blendingShader, loader, OCCLUSION_LAYER, DEFAULT_LAYER, LOADING_LAYER, updateShaderLightPosition};
@@ -115,6 +112,12 @@ window.addEventListener("resize", async _ => {
     let s = await scene
     s.updateSize(window.innerWidth, window.innerHeight);
     renderer.setSize(window.innerWidth, window.innerHeight);
+})
+
+// Preload warehouse scene for UX reasons
+let warehousePromise = WarehouseScene.getInstance();
+warehousePromise.then(warehouse => {
+    warehouse.destroyGUI()
 })
 
 setUpSceneSelection()
