@@ -58,7 +58,8 @@ document.body.appendChild(renderer.domElement);
 
 // Preload loading scene for UX reasons
 let loadingPromise = LoadingScene.getInstance();
-while (loadingPromise.isFulfilled()) {}
+while (loadingPromise.isFulfilled()) {
+}
 let scene: Promise<AbstractScene> = SkullScene.getInstance();
 
 export {

@@ -1,5 +1,6 @@
 import {
-    AmbientLight, Clock,
+    AmbientLight,
+    Clock,
     DoubleSide,
     FontLoader,
     Mesh,
@@ -111,7 +112,7 @@ export class LoadingScene extends AbstractScene {
     }
 
     update(): void {
-        this.angle = (0.1 * Date.now() / 10**Math.floor(Math.log10(Date.now()))) % (2 * Math.PI);
+        this.angle = (0.1 * Date.now() / 10 ** Math.floor(Math.log10(Date.now()))) % (2 * Math.PI);
         this.spinner.rotateZ(this.angle);
     }
 

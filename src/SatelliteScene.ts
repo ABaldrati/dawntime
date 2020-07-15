@@ -11,7 +11,7 @@ import {
     TextureLoader,
     Vector3
 } from "three";
-import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
+import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
 import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";

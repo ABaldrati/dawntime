@@ -8,7 +8,7 @@ import {
     SphereBufferGeometry,
     Vector3
 } from "three";
-import {DEFAULT_LAYER, loader, LOADING_LAYER, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
+import {DEFAULT_LAYER, loader, OCCLUSION_LAYER, renderer, updateShaderLightPosition} from "./index";
 import {AbstractScene} from "./AbstractScene";
 import {GUI} from "dat.gui";
 import {GLTF} from "three/examples/jsm/loaders/GLTFLoader";
@@ -40,16 +40,16 @@ export class WarehouseScene extends AbstractScene {
 
 
     public render() {
-            this.controls.update();
-            updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
+        this.controls.update();
+        updateShaderLightPosition(this.lightSphere, this.camera, this.shaderUniforms)
 
-            this.camera.layers.set(OCCLUSION_LAYER);
-            renderer.setClearColor("#111111")
+        this.camera.layers.set(OCCLUSION_LAYER);
+        renderer.setClearColor("#111111")
 
-            this.occlusionComposer.render();
-            this.camera.layers.set(DEFAULT_LAYER);
-            renderer.setClearColor("#030509");
-            this.sceneComposer.render();
+        this.occlusionComposer.render();
+        this.camera.layers.set(DEFAULT_LAYER);
+        renderer.setClearColor("#030509");
+        this.sceneComposer.render();
     }
 
     protected async buildScene(): Promise<WarehouseScene> {
