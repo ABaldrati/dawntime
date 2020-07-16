@@ -75,7 +75,10 @@ module.exports = (env, argv) => {
             new HtmlWebpackPlugin({
                 template: "./web/index.html",
             }),
-            new FaviconsWebpackPlugin('./web/logo_icon.png'),
+            new FaviconsWebpackPlugin( {
+                logo: './web/logo_icon.png',
+                mode: "light"
+            }),
             new MiniCssExtractPlugin(),
             new BundleAnalyzerPlugin({
                 analyzerMode: 'static',
