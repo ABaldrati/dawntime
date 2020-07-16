@@ -91,11 +91,6 @@ export class LoadingScene extends AbstractScene {
         logoPlane.position.y += 0.3;
 
         loadingPlane.layers.set(LOADING_LAYER);
-
-        this.scene.add(new AmbientLight("#ffffff"));
-        let sphere = new Mesh(new SphereBufferGeometry(4, 10, 10), new MeshBasicMaterial({color: "red"}));
-        sphere.layers.set(LOADING_LAYER);
-        this.scene.add(sphere)
         this.scene.add(loadingPlane);
 
         return Promise.resolve(this);
