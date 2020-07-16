@@ -1,10 +1,14 @@
+#version 300 es
+
 uniform sampler2D tDiffuse;
 uniform sampler2D tOcclusion;
 
-varying vec2 vUv;
+in vec2 vUv;
+
+out vec4 fragColor;
 
 void main() {
     vec4 originalColor = texture(tDiffuse, vUv);
     vec4 blendingColor = texture(tOcclusion, vUv);
-    gl_FragColor = originalColor + blendingColor;
+    fragColor = originalColor + blendingColor;
 }

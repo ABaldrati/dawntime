@@ -1,3 +1,5 @@
+#version 300 es
+
 uniform sampler2D tDiffuse;
 uniform vec2 lightPosition;
 uniform float decay;
@@ -6,7 +8,9 @@ uniform int samples;
 uniform float weight;
 uniform float density;
 
-varying vec2 vUv;
+in vec2 vUv;
+
+out vec4 fragColor;
 
 void main() {
     vec2 ray = vUv - lightPosition;
@@ -23,5 +27,5 @@ void main() {
         color += currentColor;
     }
 
-    gl_FragColor = color * exposure;
+    fragColor = color * exposure;
 }
