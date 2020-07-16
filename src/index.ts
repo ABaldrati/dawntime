@@ -110,6 +110,7 @@ function setUpSceneSelection() {
     let sceneSelector = gui.add({scene}, "scene", Object.keys(scenes));
     sceneSelector.setValue("Skull");
     sceneSelector.onChange(async (selectedScene: string) => {
+        (await loadingPromise).updateSize(window.innerWidth, window.innerHeight)
         sceneSelector.domElement.children.item(0)!!.setAttribute("disabled", "");
         let oldScene = await scene;
         oldScene.destroyGUI();
@@ -120,7 +121,12 @@ function setUpSceneSelection() {
 }
 
 window.addEventListener("resize", async _ => {
-    let s = await scene
+    let s
+    if (scene.isFulfilled()) {
+        s = await scene;
+    } else {
+        s = await loadingPromise
+    }
     s.updateSize(window.innerWidth, window.innerHeight);
     renderer.setSize(window.innerWidth, window.innerHeight);
 })
