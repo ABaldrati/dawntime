@@ -23,6 +23,7 @@ export abstract class AbstractScene {
     protected constructor(protected camera: PerspectiveCamera) {
         this.scene = new Scene();
         this.controls = new OrbitControls(this.camera, renderer.domElement);
+        this.controls.enablePan = false;
         [this.occlusionComposer, this.sceneComposer] = this.composeEffects();
     }
 
