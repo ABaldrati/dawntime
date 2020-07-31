@@ -25,6 +25,8 @@ Some scenes may take some time to load.
 
 In ```dawntime``` we implement a volumetric light scattering effect based on the postprocessing technique described by Kenny Mitchell [here](https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process).
 
+More details about the implementation in the [presentation](https://gitlab.com/reddeadrecovery/dawntime/-/blob/master/docs/dawntime_presentation%20.pdf)
+
 
 This project contains five demostrations scene which implement the volumetric light scattering technique linked above.
 
