@@ -18,7 +18,7 @@
     "dat.gui": "^0.7.7",
     "jquery": "latest",
     "popper.js": "latest",
-    "three": "^0.118.3"
+    "three": "^0.137.0"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.32",
